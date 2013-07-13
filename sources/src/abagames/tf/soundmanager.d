@@ -28,21 +28,21 @@ public class SoundManager {
   GameManager manager;
   Music bgm[BGM_NUM];
   Chunk se[SE_NUM];
-  const char[][] bgmFileName = 
+  string[] bgmFileName =
     ["we_are_tumiki_fighters.ogg",
     "just_over_the_horizon.ogg",
     "panic_on_meadow.ogg",
     "here_comes_a_gigantic_toy.ogg",
     "battle_over_the_junk_city.ogg",
     "return_to_home.ogg"];
-  const char[][] seFileName = 
+  string[] seFileName =
     ["ship_shot.wav", "stuck.wav", "stuck_bonus.wav",
     "stuck_destroyed.wav", "ship_destroyed.wav",
     "enemy_damaged.wav", "small_enemy_destroyed.wav", "enemy_destroyed.wav", "boss_destroyed.wav",
     "extend.wav", "warning.wav", "propeller.wav", "stuck_bonus_pushin.wav"];
-  const int[] seChannel = 
-    [0, 1, 2, 
-    3, 2, 
+  const int[] seChannel =
+    [0, 1, 2,
+    3, 2,
     4, 5, 6, 6,
     7, 7, 7, 2];
  private:
@@ -52,13 +52,13 @@ public class SoundManager {
     if (Sound.noSound)
       return;
     int i = 0;
-    foreach (inout Music b; bgm) {
+    foreach (ref Music b; bgm) {
       b = new Music;
       b.load(bgmFileName[i]);
       i++;
     }
     i = 0;
-    foreach (inout Chunk c; se) {
+    foreach (ref Chunk c; se) {
       c = new Chunk;
       c.load(seFileName[i], seChannel[i]);
       i++;
@@ -75,7 +75,7 @@ public class SoundManager {
   }
 
   public static void playBgm(int n) {
-    if (Sound.noSound || 
+    if (Sound.noSound ||
 	(manager.state != GameManager.State.IN_GAME &&
 	 manager.state != GameManager.State.START_GAME &&
 	 manager.state != GameManager.State.END_GAME))
@@ -84,7 +84,7 @@ public class SoundManager {
   }
 
   public static void playBgmOnce(int n) {
-    if (Sound.noSound || 
+    if (Sound.noSound ||
 	(manager.state != GameManager.State.IN_GAME &&
 	 manager.state != GameManager.State.START_GAME &&
 	 manager.state != GameManager.State.END_GAME))

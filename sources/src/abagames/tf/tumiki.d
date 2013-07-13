@@ -32,7 +32,7 @@ public class Tumiki {
   Barrage[] barrage;
   static int propellerCnt = 0;
 
-  private final const float CHECK_HIT_SIZE_RETIO = 0.7;
+  private const float CHECK_HIT_SIZE_RETIO = 0.7;
 
   public this(int shape, int color,
 	      float x, float y, float sx, float sy, float sizeRatio) {
@@ -40,7 +40,7 @@ public class Tumiki {
     this.color = color;
     ofs = new Vector(x * sizeRatio, y * sizeRatio);
     size = new Vector(sx * sizeRatio * 0.5 - 0.15, sy * sizeRatio * 0.5 - 0.15);
-    checkHitSize = new Vector(size.x + CHECK_HIT_SIZE_RETIO, 
+    checkHitSize = new Vector(size.x + CHECK_HIT_SIZE_RETIO,
 			      size.y + CHECK_HIT_SIZE_RETIO);
     barrage = null;
   }
@@ -72,7 +72,7 @@ public class Tumiki {
     glPushMatrix();
     glTranslatef(-size.x * PROPELLER_OFFSET, 0, 0);
     glScalef(size.x, size.y, (size.x  + size.y) / 2);
-    glCallList(displayListIdx + PROPELLER_SHAPE + 
+    glCallList(displayListIdx + PROPELLER_SHAPE +
 	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
     glPopMatrix();
     glPushMatrix();
@@ -82,7 +82,7 @@ public class Tumiki {
 	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
     glPopMatrix();
   }
-  
+
   private void drawPropellerFront(float deg, int shade) {
     float d = deg;
     glRotatef(90, 1, 0, 0);
@@ -91,7 +91,7 @@ public class Tumiki {
     glPushMatrix();
     glTranslatef(-size.x * PROPELLER_OFFSET, (size.x  + size.y) / 2, (size.x  + size.y) / 2);
     glScalef(size.x, size.y, (size.x  + size.y) / 2);
-    glCallList(displayListIdx + PROPELLER_SHAPE + 
+    glCallList(displayListIdx + PROPELLER_SHAPE +
 	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
     glPopMatrix();
     glPushMatrix();
@@ -101,7 +101,7 @@ public class Tumiki {
 	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
     glPopMatrix();
   }
-  
+
   private void drawPropeller(float deg, int shade, float sz) {
     float d = (shape - PROPELLER_SHAPE) * PI / 4 + deg;
     glRotatef(propellerCnt * 17 / size.x, -sin(d), cos(d), 0);
@@ -109,7 +109,7 @@ public class Tumiki {
     glPushMatrix();
     glTranslatef(-size.x * PROPELLER_OFFSET * sz, 0, 0);
     glScalef(size.x * sz, size.y * sz, (size.x  + size.y) / 2 * sz);
-    glCallList(displayListIdx + PROPELLER_SHAPE + 
+    glCallList(displayListIdx + PROPELLER_SHAPE +
 	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
     glPopMatrix();
     glPushMatrix();
@@ -119,7 +119,7 @@ public class Tumiki {
 	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
     glPopMatrix();
   }
-  
+
   private void drawPropellerFront(float deg, int shade, float sz) {
     float d = deg;
     glRotatef(90, 1, 0, 0);
@@ -129,7 +129,7 @@ public class Tumiki {
     glTranslatef(-size.x * PROPELLER_OFFSET * sz,
 		 (size.x  + size.y) / 2 * sz, (size.x  + size.y) / 2 * sz);
     glScalef(size.x * sz, size.y * sz, (size.x  + size.y) / 2 * sz);
-    glCallList(displayListIdx + PROPELLER_SHAPE + 
+    glCallList(displayListIdx + PROPELLER_SHAPE +
 	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
     glPopMatrix();
     glPushMatrix();
@@ -140,7 +140,7 @@ public class Tumiki {
 	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
     glPopMatrix();
   }
-  
+
   public void draw(Vector pos, float z, int shade, float deg) {
     glPushMatrix();
     float ox = ofs.x * cos(deg) - ofs.y * sin(deg);
@@ -218,11 +218,11 @@ public class Tumiki {
     return checkDistHit(p.x - px, p.y - py, ofs, size);
   }
 
-  private static const int DISPLAY_LIST_NUM = SHAPE_NUM * COLOR_NUM * SHADE_NUM;
   public static const int COLOR_NUM = 12;
+  private static const int DISPLAY_LIST_NUM = SHAPE_NUM * COLOR_NUM * SHADE_NUM;
   public static const int DAMAGED_COLOR = 6;
   public static const int WOUNDED_COLOR = 0;
-  private static const float[3][COLOR_NUM] colorParams = 
+  private static const float[3][COLOR_NUM] colorParams =
     [
      [0.9, 0.6, 0.6], [0.6, 0.9, 0.6], [0.6, 0.6, 0.9],
      [0.8, 0.8, 0.6], [0.8, 0.6, 0.8], [0.6, 0.8, 0.8],
@@ -237,15 +237,15 @@ public class Tumiki {
     switch (i) {
     case 1:
       Screen.setColor
-	(colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8); 
+	(colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8);
       break;
     case 2:
       Screen.setColor
-	(colorParams[j][0] * 0.5, colorParams[j][1] * 0.5, colorParams[j][2] * 0.5); 
+	(colorParams[j][0] * 0.5, colorParams[j][1] * 0.5, colorParams[j][2] * 0.5);
       break;
     default:
       Screen.setColor
-	(colorParams[j][0] * 0.9, colorParams[j][1] * 0.9, colorParams[j][2] * 0.9); 
+	(colorParams[j][0] * 0.9, colorParams[j][1] * 0.9, colorParams[j][2] * 0.9);
       break;
     }
   }
@@ -254,15 +254,17 @@ public class Tumiki {
     switch (i) {
     case 0:
       Screen.setColor
-	(colorParams[j][0] * 0.7, colorParams[j][1] * 0.7, colorParams[j][2] * 0.7); 
+	(colorParams[j][0] * 0.7, colorParams[j][1] * 0.7, colorParams[j][2] * 0.7);
       break;
     case 1:
       Screen.setColor
-	(colorParams[j][0] * 0.6, colorParams[j][1] * 0.6, colorParams[j][2] * 0.6); 
+	(colorParams[j][0] * 0.6, colorParams[j][1] * 0.6, colorParams[j][2] * 0.6);
       break;
     case 2:
       Screen.setColor
-	(colorParams[j][0] * 0.4, colorParams[j][1] * 0.4, colorParams[j][2] * 0.4); 
+	(colorParams[j][0] * 0.4, colorParams[j][1] * 0.4, colorParams[j][2] * 0.4);
+      break;
+    default:
       break;
     }
   }
@@ -301,7 +303,7 @@ public class Tumiki {
 	glEnd();
 	if (i == 0 || i == 3) {
 	  Screen.setColor
-	    (colorParams[j][0], colorParams[j][1], colorParams[j][2]); 
+	    (colorParams[j][0], colorParams[j][1], colorParams[j][2]);
 	  glBegin(GL_LINE_STRIP);
 	  if (i == 0) {
 	    glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
@@ -319,7 +321,7 @@ public class Tumiki {
 	  glEnd();
 	  if (i == 0) {
 	    Screen.setColor
-	      (colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8); 
+	      (colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8);
 	    glBegin(GL_LINES);
 	    glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, DEPTH);
 	    glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
@@ -362,7 +364,7 @@ public class Tumiki {
 	  }
 	  if (i == 0 || i == 3) {
 	    Screen.setColor
-	      (colorParams[j][0], colorParams[j][1], colorParams[j][2]); 
+	      (colorParams[j][0], colorParams[j][1], colorParams[j][2]);
 	    glBegin(GL_LINE_STRIP);
 	    glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
 	    glVertex3f(-1 - LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
@@ -371,7 +373,7 @@ public class Tumiki {
 	    glEnd();
 	    if (i == 0) {
 	      Screen.setColor
-		(colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8); 
+		(colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8);
 	      glBegin(GL_LINES);
 	      glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, DEPTH);
 	      glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
@@ -413,7 +415,7 @@ public class Tumiki {
 	  }
 	  if (i == 0 || i == 3) {
 	    Screen.setColor
-	      (colorParams[j][0], colorParams[j][1], colorParams[j][2]); 
+	      (colorParams[j][0], colorParams[j][1], colorParams[j][2]);
 	    glBegin(GL_LINE_STRIP);
 	    glVertex3f(1 + LINE_PADDING, -1 + LINE_PADDING, LINE_PADDING);
 	    glVertex3f(0, 1 + LINE_PADDING, LINE_PADDING);
@@ -422,7 +424,7 @@ public class Tumiki {
 	    glEnd();
 	    if (i == 0) {
 	      Screen.setColor
-		(colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8); 
+		(colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8);
 	      glBegin(GL_LINES);
 	      glVertex3f(1 + LINE_PADDING, -1 - LINE_PADDING, DEPTH);
 	      glVertex3f(1 + LINE_PADDING, -1 + LINE_PADDING, LINE_PADDING);
@@ -506,7 +508,7 @@ public class Barrage {
     this.postWait = postWait;
   }
 
-  public void addBml(char[] bmlFileName, float r, float s) {
+  public void addBml(string bmlFileName, float r, float s) {
     BulletMLParser *p = BarrageManager.getInstance(bmlFileName);
     if (!p)
       throw new Error("File not found: " ~ bmlFileName);
@@ -531,6 +533,8 @@ public class Barrage {
     case BulletInst.Type.SHIP:
       cl = SHOT_COLOR;
       xrev = yrev = -1;
+      break;
+    default:
       break;
     }
     return bullets.addTopBullet(parser, rank, speed,

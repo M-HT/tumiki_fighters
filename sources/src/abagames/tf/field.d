@@ -6,6 +6,7 @@
 module abagames.tf.field;
 
 private import std.string;
+private import std.conv;
 private import std.math;
 private import opengl;
 private import abagames.util.vector;
@@ -41,14 +42,14 @@ public class Field {
     size.y = 16;
     eyeZ = 20;
     uint sn = 1;
-    foreach (inout FieldPattern fp; fieldPattern) {
-      Logger.info("Load field: " ~ std.string.toString(sn));
-      fp = new FieldPattern("fld" ~ std.string.toString(sn) ~ ".fld");
+    foreach (ref FieldPattern fp; fieldPattern) {
+      Logger.info("Load field: " ~ to!string(sn));
+      fp = new FieldPattern("fld" ~ to!string(sn) ~ ".fld");
       sn++;
     }
     Logger.info("Load fields completed.");
-    auto FieldObj fieldObjClass = new FieldObj;
-    auto FieldObjInitializer foi = new FieldObjInitializer(this);
+    scope FieldObj fieldObjClass = new FieldObj;
+    scope FieldObjInitializer foi = new FieldObjInitializer(this);
     fieldObjs = new ActorPool(64, fieldObjClass, foi);
     rand = new Rand;
   }
@@ -61,7 +62,7 @@ public class Field {
     rand.setSeed(pattern.randSeed);
     Screen.setClearColor(pattern.br, pattern.bg, pattern.bb, 1);
     foreach (FieldLinePattern flp; pattern.line)
-      flp.cnt = flp.interval[rand.nextInt(flp.interval.length)];
+      flp.cnt = flp.interval[rand.nextInt(cast(int)(flp.interval.length))];
     fieldObjs.clear();
     float x = 0, nx, tx, ty;
     for (int i = 0; i < 4; i++) {
@@ -86,13 +87,13 @@ public class Field {
       if (flp.cnt <= 0) {
 	FieldObj fo = cast(FieldObj) fieldObjs.getInstance();
 	if (fo) {
-	  TumikiSet ts = flp.tumikiSet[rand.nextInt(flp.tumikiSet.length)];
+	  TumikiSet ts = flp.tumikiSet[rand.nextInt(cast(int)(flp.tumikiSet.length))];
 	  if (flp.onGround)
 	    fo.setGround(ts, flp.z, pattern.scrollSpeed);
 	  else
 	    fo.setSky(ts, flp.z, pattern.scrollSpeed / 3 * 2, rand);
 	}
-	flp.cnt = flp.interval[rand.nextInt(flp.interval.length)];
+	flp.cnt = flp.interval[rand.nextInt(cast(int)(flp.interval.length))];
       }
     }
     mnx += pattern.scrollSpeed;
@@ -151,14 +152,14 @@ public class Field {
   }
 
   public bool checkHit(Vector p, float space) {
-    if (p.x < -size.x + space || p.x > size.x - space || 
+    if (p.x < -size.x + space || p.x > size.x - space ||
 	p.y < -size.y + space || p.y > size.y - space)
       return true;
     return false;
   }
 
   public bool checkHit(Vector p, float xm, float xp, float ym, float yp) {
-    if (p.x < -size.x - xp || p.x > size.x - xm || 
+    if (p.x < -size.x - xp || p.x > size.x - xm ||
 	p.y < -size.y - yp || p.y > size.y - ym)
       return true;
     return false;
@@ -249,26 +250,26 @@ public class FieldPattern {
   float mtr, mtg, mtb;
   float mrr, mrg, mrb;
  private:
-  static const char[] FIELD_DIR_NAME = "field";
-  
+  static string FIELD_DIR_NAME = "field";
+
   // Initialize FieldPattern with the array.
   // randSeed, scrollSpeed,
   // [z, [interval], [TumikiSetName]]
   // (end when interval == "e", TumikiSetName == "e")
   public this(char[][] data) {
     StringIterator si = new StringIterator(data);
-    randSeed = atoi(si.next);
-    scrollSpeed = atof(si.next);
-    br = atof(si.next); bg = atof(si.next); bb = atof(si.next);
-    gr = atof(si.next); gg = atof(si.next); gb = atof(si.next);
-    mtr = atof(si.next); mtg = atof(si.next); mtb = atof(si.next);
+    randSeed = to!int(si.next);
+    scrollSpeed = to!float(si.next);
+    br = to!float(si.next); bg = to!float(si.next); bb = to!float(si.next);
+    gr = to!float(si.next); gg = to!float(si.next); gb = to!float(si.next);
+    mtr = to!float(si.next); mtg = to!float(si.next); mtb = to!float(si.next);
     mrr = (br * 2+ gr) / 3;
     mrg = (bg * 2+ gg) / 3;
     mrb = (bb * 2+ gb) / 3;
     for (;;) {
       if (!si.hasNext)
 	break;
-      float z = atof(si.next);
+      float z = to!float(si.next);
       FieldLinePattern flp = new FieldLinePattern;
       if (z > 0) {
 	flp.z = -z;
@@ -281,19 +282,19 @@ public class FieldPattern {
 	char[] v = si.next;
 	if (v == "e")
 	  break;
-	flp.addInterval(atoi(v));
+	flp.addInterval(to!int(v));
       }
       for (;;) {
 	char[] v = si.next;
 	if (v == "e")
 	  break;
-	flp.addTumikiSet(TumikiSet.getInstance(v));
+	flp.addTumikiSet(TumikiSet.getInstance(v.idup));
       }
       line ~= flp;
     }
   }
 
-  public this(char[] fileName) {
+  public this(string fileName) {
     char[][] data = CSVTokenizer.readFile(FIELD_DIR_NAME ~ "/" ~ fileName);
     this(data);
   }

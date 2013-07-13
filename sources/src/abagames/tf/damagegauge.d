@@ -19,7 +19,7 @@ public class DamageGauge {
   DamageGaugeItem[3] item;
 
   public this() {
-    foreach (inout DamageGaugeItem dgi; item)
+    foreach (ref DamageGaugeItem dgi; item)
       dgi = new DamageGaugeItem;
   }
 

@@ -31,7 +31,7 @@ public class MobileLetter: Actor {
   float size;
   int cnt;
 
-  public static this() {
+  public static void initRand() {
     rand = new Rand;
   }
 
@@ -100,15 +100,15 @@ public class MobileLetterPool: ActorPool {
  private:
   Field field;
   Rand rand;
-  
+
   public this(int n, ActorInitializer ini, Field f) {
     field = f;
-    auto MobileLetter mlClass = new MobileLetter;
+    scope MobileLetter mlClass = new MobileLetter;
     super(n, mlClass, ini);
     rand = new Rand;
   }
 
-  public void add(char[] str, float x, float lgt, float size, int cnt, int col) {
+  public void add(string str, float x, float lgt, float size, int cnt, int col) {
     int color = col;
     if (col < 0)
       rand.setSeed(-col);

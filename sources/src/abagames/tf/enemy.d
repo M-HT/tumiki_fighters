@@ -69,7 +69,7 @@ public class Enemy: Actor {
     gauge = ei.gauge;
     pos = new Vector;
     mv = new EnemyMovement;
-    foreach (inout EnemyPart ep; parts)
+    foreach (ref EnemyPart ep; parts)
       ep = new EnemyPart(ship, bullets, fragments);
   }
 
@@ -142,11 +142,13 @@ public class Enemy: Actor {
     float speed;
     Vector[] pt;
     if (!mv.withdraw) {
-      pt = mv.pattern.point[barragePtnIdx];
-      if (!pt) {
+      Vector[]* ppt;
+      ppt = barragePtnIdx in mv.pattern.point;
+      if (ppt is null) {
 	pt = mv.pattern.point[PointsMovePattern.BASIC_PATTERN_IDX];
 	speed = mv.pattern.speed[PointsMovePattern.BASIC_PATTERN_IDX];
       } else {
+	pt = *ppt;
 	speed = mv.pattern.speed[barragePtnIdx];
       }
       if (!mv.reachFirstPointFirst)
@@ -173,7 +175,7 @@ public class Enemy: Actor {
     float od = d - mv.deg;
     if (od > PI)
       od -= PI * 2;
-    else if (od < -PI) 
+    else if (od < -PI)
       od += PI * 2;
     float aod = fabs(od);
     if (aod < BOSS_MOVE_DEG) {
@@ -209,7 +211,7 @@ public class Enemy: Actor {
       }
     }
   }
-  
+
   private void addTopBullets() {
     for (int i = 0 ; i < partsNum; i++)
       parts[i].addTopBullets(barragePtnIdx);
@@ -249,7 +251,7 @@ public class Enemy: Actor {
     if (mv.moveBullet) {
       pos.x = mv.moveBullet.bullet.pos.x;
       pos.y = mv.moveBullet.bullet.pos.y;
-      if (field.checkHit(pos, 
+      if (field.checkHit(pos,
 			 spec.sizeXm * 2, spec.sizeXp * 2, spec.sizeYm * 2, spec.sizeYp * 2)) {
 	remove();
 	return;
@@ -272,7 +274,7 @@ public class Enemy: Actor {
       if (attackPtnIdx >= af.attackPeriod.length)
 	attackPtnIdx = 0;
       if (!mv.moveBullet) {
-	if (mv.pattern.point[barragePtnIdx])
+	if ((barragePtnIdx in mv.pattern.point) !is null)
 	  movePatternChanged();
       }
     } else if (fireCnt < af.breakPeriod[attackPtnIdx]) {
@@ -329,7 +331,7 @@ public class Enemy: Actor {
 	if (ep.shield <= 0) {
 	  if (ep.spec.damageToMainBody > 0) {
 	    parts[0].shield -= ep.spec.damageToMainBody;
-	    particles.add(5, pos, 0, PI * 2, 0.1, parts[0].spec.size / 4, Particle.TypeName.SMOKE);
+	    particles.add(5, pos, 0, PI * 2, 0.1, parts[0].spec.sizeof / 4, Particle.TypeName.SMOKE);
 	  }
 	  manager.addScore(ep.spec.tumikiSet.score, p);
 	  if (ep.firstShield <= 1)
@@ -399,7 +401,7 @@ public class EnemyPool: ActorPool {
  private:
 
   public this(int n, ActorInitializer ini) {
-    auto Enemy enemyClass = new Enemy;
+    scope Enemy enemyClass = new Enemy;
     super(n, enemyClass, ini);
   }
 
@@ -437,7 +439,7 @@ public class EnemyPart {
     this.target = target;
     this.bullets = bullets;
     this.fragments = fragments;
-    foreach (inout EnemyTopBullet etb; topBullet)
+    foreach (ref EnemyTopBullet etb; topBullet)
       etb = new EnemyTopBullet;
   }
 
@@ -453,7 +455,7 @@ public class EnemyPart {
     removeTopBullets();
     shield = -1;
   }
-  
+
   public void addTopBullets(int barragePtnIdx) {
     if (shield <= 0)
       return;
@@ -497,8 +499,8 @@ public class EnemyPart {
 	etb.actor.bullet.pos.x = x + ofsx;
 	etb.actor.bullet.pos.y = y + ofsy;
 	if (coverPartsNum > 0 && !etb.coverChecked) {
-	  for (int i = 0; i < coverPartsNum; i++) {
-	    if (coverParts[i].shield > 0 && coverParts[i].covers(ofsx, ofsy)) {
+	  for (int j = 0; j < coverPartsNum; j++) {
+	    if (coverParts[j].shield > 0 && coverParts[j].covers(ofsx, ofsy)) {
 	      etb.actor.removeForced();
 	      etb.actor = null;
 	      etb.deactivated = true;
@@ -515,7 +517,7 @@ public class EnemyPart {
     coverParts[coverPartsNum] = part;
     coverPartsNum++;
   }
-  
+
   public bool covers(float x, float y) {
     float ox = x - spec.ofs.x;
     float oy = y - spec.ofs.y;

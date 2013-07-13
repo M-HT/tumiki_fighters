@@ -70,7 +70,7 @@ public class Ship: BulletTarget {
   bool btnPrsd;
   bool pullIn;
 
-  public static this() {
+  public static void initRand() {
     rand = new Rand;
   }
 
@@ -88,7 +88,7 @@ public class Ship: BulletTarget {
     target = new VirtualBulletTarget;
     etb[0] = new EnemyTopBullet;
     createTumiki();
-    foreach (inout Vector fp; friendPos) {
+    foreach (ref Vector fp; friendPos) {
       fp = new Vector;
     }
   }

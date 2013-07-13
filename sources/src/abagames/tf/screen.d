@@ -14,7 +14,7 @@ private import abagames.util.sdl.screen3d;
  */
 public class Screen: Screen3D {
  public:
-  static const char[] CAPTION = "TUMIKI Fighters";
+  static string CAPTION = "TUMIKI Fighters";
 
   protected override void init() {
     setCaption(CAPTION);

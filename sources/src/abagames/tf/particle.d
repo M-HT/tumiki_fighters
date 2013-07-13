@@ -30,7 +30,7 @@ public class Particle: Actor {
   int type;
   int cnt;
 
-  public static this() {
+  public static void initRand() {
     rand = new Rand;
   }
 
@@ -74,6 +74,8 @@ public class Particle: Actor {
     case TypeName.SPARK:
       size *= 1.01;
       break;
+    default:
+      break;
     }
   }
 
@@ -83,10 +85,12 @@ public class Particle: Actor {
       Screen.setColor(0.8, 0.8, 0.8, alpha);
       break;
     case TypeName.SPARK:
-      if (cnt & 1 == 0)
+      if ((cnt & 1) == 0)
 	Screen.setColor(1, 0.4, 0.2, alpha);
       else
 	Screen.setColor(1, 1, 0.1, alpha);
+      break;
+    default:
       break;
     }
     glVertex3f(pos.x - size, pos.y - size, 0);
@@ -101,9 +105,9 @@ public class ParticleInitializer: ActorInitializer {
 
 public class ParticlePool: ActorPool {
  private:
-  
+
   public this(int n, ActorInitializer ini) {
-    auto Particle particleClass = new Particle;
+    scope Particle particleClass = new Particle;
     super(n, particleClass, ini);
   }
 

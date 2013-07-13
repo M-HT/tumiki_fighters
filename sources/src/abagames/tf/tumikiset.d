@@ -6,6 +6,7 @@
 module abagames.tf.tumikiset;
 
 private import std.string;
+private import std.conv;
 private import std.math;
 private import abagames.util.vector;
 private import abagames.util.csv;
@@ -28,40 +29,40 @@ public class TumikiSet {
   int score, fireScore, fireScoreInterval;
   float sizeXm, sizeXp, sizeYm, sizeYp, size;
  private:
-  static TumikiSet[char[]] instances;
-  static const char[] TUMIKI_DIR_NAME = "tumiki";
+  static TumikiSet[string] instances;
+  static string TUMIKI_DIR_NAME = "tumiki";
   static const float BULLET_SPEED_RATIO = 1.2;
-  static int[char[]] shapeStr;
-  static char[][] SHAPE_STR = 
+  static int[string] shapeStr;
+  static string[] SHAPE_STR =
     ["s", "ul", "ur", "dr", "dl", "u", "r", "d", "l", "pu", "pdr", "pr", "pur", "pd", "pf"];
-  static int[char[]] colorStr;
-  static char[][] COLOR_STR = 
+  static int[string] colorStr;
+  static string[] COLOR_STR =
     ["r", "g", "b", "y", "p", "a", "w", "gr"];
-  static int[char[]] bulletShapeStr;
-  static char[][] BULLET_SHAPE_STR = 
+  static int[string] bulletShapeStr;
+  static string[] BULLET_SHAPE_STR =
     ["b", "a", "r"];
-  static int[char[]] bulletColorStr;
-  static char[][] BULLET_COLOR_STR = 
+  static int[string] bulletColorStr;
+  static string[] BULLET_COLOR_STR =
     ["r", "a", "p"];
 
   public static this() {
     int i = 0;
-    foreach (char[] s; SHAPE_STR) {
+    foreach (string s; SHAPE_STR) {
       shapeStr[s] = i;
       i++;
     }
     i = 0;
-    foreach (char[] s; COLOR_STR) {
+    foreach (string s; COLOR_STR) {
       colorStr[s] = i;
       i++;
     }
     i = 0;
-    foreach (char[] s; BULLET_SHAPE_STR) {
+    foreach (string s; BULLET_SHAPE_STR) {
       bulletShapeStr[s] = i;
       i++;
     }
     i = 0;
-    foreach (char[] s; BULLET_COLOR_STR) {
+    foreach (string s; BULLET_COLOR_STR) {
       bulletColorStr[s] = i;
       i++;
     }
@@ -79,21 +80,22 @@ public class TumikiSet {
     sizeXm = sizeYm = float.max;
     sizeXp = sizeYp = float.min;
     StringIterator si = new StringIterator(data);
-    float sizeRatio = atof(si.next);
-    score = atoi(si.next);
-    fireScore = atoi(si.next);
-    fireScoreInterval = atoi(si.next);
+    float sizeRatio = to!float(si.next);
+    score = to!int(si.next);
+    fireScore = to!int(si.next);
+    fireScoreInterval = to!int(si.next);
     for (;;) {
       if (!si.hasNext)
 	break;
       char[] v = si.next;
       int shape = shapeStr[v];
       v = si.next;
-      int color = colorStr[v];
-      float x = atof(si.next);
-      float y = atof(si.next);
-      float sizex = atof(si.next);
-      float sizey = atof(si.next);
+      int* pcolor = v in colorStr;
+      int color = (pcolor is null)?0:*pcolor;
+      float x = to!float(si.next);
+      float y = to!float(si.next);
+      float sizex = to!float(si.next);
+      float sizey = to!float(si.next);
       Tumiki ti = new Tumiki(shape, color, x, y, sizex, sizey, sizeRatio);
       if (sizeXp < ti.ofs.x + ti.size.x)
 	sizeXp = ti.ofs.x + ti.size.x;
@@ -111,22 +113,23 @@ public class TumikiSet {
 	  ti.addBarrage(new Barrage);
 	  continue;
 	}
-	int shape = bulletShapeStr[v];
+	int shape2 = bulletShapeStr[v];
 	v = si.next;
-	int color = bulletColorStr[v];
-	float size = atof(si.next);
-	float yReverse = atof(si.next);
-	int prevWait = atoi(si.next);
-	int postWait = atoi(si.next);
+	int* pcolor2 = v in bulletColorStr;
+	int color2 = (pcolor2 is null)?0:*pcolor2;
+	float size = to!float(si.next);
+	float yReverse = to!float(si.next);
+	int prevWait = to!int(si.next);
+	int postWait = to!int(si.next);
 	Barrage br = new Barrage
-	  (shape, color, size, yReverse, prevWait, postWait);
+	  (shape2, color2, size, yReverse, prevWait, postWait);
 	for (;;) {
-	  char[] bml = si.next;
+	  const char[] bml = si.next;
 	  if (bml == "e")
 	    break;
-	  float rank = atof(si.next);
-	  float speed = atof(si.next);
-	  br.addBml(bml, rank, speed * BULLET_SPEED_RATIO);
+	  float rank = to!float(si.next);
+	  float speed = to!float(si.next);
+	  br.addBml(bml.idup, rank, speed * BULLET_SPEED_RATIO);
 	}
 	ti.addBarrage(br);
       }
@@ -136,18 +139,19 @@ public class TumikiSet {
   }
 
   // Initialize TumikiSet from the file.
-  private this(char[] fileName) {
+  public this(string fileName) {
     Logger.info("Load tumiki set: " ~ fileName);
     char[][] data = CSVTokenizer.readFile(TUMIKI_DIR_NAME ~ "/" ~ fileName);
     this(data);
   }
 
-  public static TumikiSet getInstance(char[] fileName) {
-    TumikiSet inst = instances[fileName];
-    if (!inst) {
-      inst = new TumikiSet(fileName);
-      instances[fileName] = inst;
-    }
+  public static TumikiSet getInstance(string fileName) {
+    TumikiSet* pinst = fileName in instances;
+    if (pinst !is null) return *pinst;
+
+    TumikiSet inst = new TumikiSet(fileName);
+    instances[fileName] = inst;
+
     return inst;
   }
 

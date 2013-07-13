@@ -19,8 +19,8 @@ public class LetterRender {
   static const float LETTER_WIDTH = 2.1f;
   static const float LETTER_HEIGHT = 3.0f;
   static const int COLOR_NUM = 6;
- private:
   static const int LETTER_NUM = 43;
+ private:
   static const int DISPLAY_LIST_NUM = LETTER_NUM * COLOR_NUM;
   static Rand rand;
 
@@ -32,7 +32,7 @@ public class LetterRender {
     return s * LETTER_HEIGHT;
   }
 
-  private static void drawLetter(int n, float x, float y, float s, float d, int c) {
+  public static void drawLetter(int n, float x, float y, float s, float d, int c) {
     glPushMatrix();
     glTranslatef(x, y, 0);
     glScalef(s, s, s);
@@ -76,7 +76,7 @@ public class LetterRender {
     return idx;
   }
 
-  public static void drawString(char[] str, float lx, float y, float s, int d, int cl, 
+  public static void drawString(const char[] str, float lx, float y, float s, int d, int cl,
 				bool rev) {
     if (cl < 0)
       rand.setSeed(-cl);
@@ -97,6 +97,8 @@ public class LetterRender {
       break;
     case Direction.TO_UP:
       ld = 270;
+      break;
+    default:
       break;
     }
     foreach (char c; str) {
@@ -127,11 +129,13 @@ public class LetterRender {
       case Direction.TO_UP:
 	y -= s * LETTER_WIDTH;
 	break;
+      default:
+	break;
       }
     }
   }
 
-  public static void drawString(char[] str, float lx, float y, float s, int d, int cl) {
+  public static void drawString(const char[] str, float lx, float y, float s, int d, int cl) {
     drawString(str, lx, y, s, d, cl, false);
   }
 
@@ -154,6 +158,8 @@ public class LetterRender {
     case Direction.TO_UP:
       ld = 270;
       break;
+    default:
+      break;
     }
     for (;;) {
       drawLetter(n % 10, x, y, s, ld, cl);
@@ -170,6 +176,8 @@ public class LetterRender {
       case Direction.TO_UP:
 	y += s * LETTER_WIDTH;
 	break;
+      default:
+	break;
       }
       n /= 10;
       if (n <= 0) break;
@@ -184,7 +192,7 @@ public class LetterRender {
       dg = 3;
     else if (num < 10000)
       dg = 4;
-    else 
+    else
       dg = 5;
     float x = lx + LETTER_WIDTH * s * dg / 2;
     float y = ly + LETTER_HEIGHT * s / 2;
@@ -246,9 +254,9 @@ public class LetterRender {
     for (int i = 0;; i++) {
       deg = cast(int) spData[idx][i][4];
       if (deg > 99990) break;
-      x = -spData[idx][i][0]; 
+      x = -spData[idx][i][0];
       y = -spData[idx][i][1];
-      size = spData[idx][i][2]; 
+      size = spData[idx][i][2];
       length = spData[idx][i][3];
       x *= 1.2f;
       y *= 0.9f;
@@ -261,14 +269,14 @@ public class LetterRender {
 	size *= 0.7f;
 	length *= 1.1f;
       }
-      x = -x; 
+      x = -x;
       y = y;
       deg %= 180;
       deg += rand.nextSignedFloat(16);
       drawBox(x, y, size, length, deg, c);
-      /*if (deg <= 45 || deg > 135) 
+      /*if (deg <= 45 || deg > 135)
 	drawBox(x, y, size, length);
-      else 
+      else
       drawBox(x, y, length, size);*/
     }
   }
@@ -292,7 +300,7 @@ public class LetterRender {
     glDeleteLists(displayListIdx, DISPLAY_LIST_NUM);
   }
 
-  private static float[5][16][] spData = 
+  private static float[5][16][] spData =
     [[
      [0, 1.15f, 0.65f, 0.3f, 0],
      [-0.6f, 0.55f, 0.65f, 0.3f, 90], [0.6f, 0.55f, 0.65f, 0.3f, 90],

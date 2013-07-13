@@ -27,7 +27,7 @@ public class BulletActorPool: ActorPool, BulletsManager {
   int cnt;
 
   public this(int n, ActorInitializer ini) {
-    auto BulletActor bulletActorClass = new BulletActor;
+    scope BulletActor bulletActorClass = new BulletActor;
     super(n, bulletActorClass, ini);
     Bullet.setBulletsManager(this);
     BulletActor.init();
@@ -62,7 +62,7 @@ public class BulletActorPool: ActorPool, BulletsManager {
       ba.setMorphSeed();
     } else {
       nmi--;
-      ba.set(Bullet.now.pos.x, Bullet.now.pos.y, deg, speed, 
+      ba.set(Bullet.now.pos.x, Bullet.now.pos.y, deg, speed,
 	     rb.ranks[nmi], rb.speeds[nmi],
 	     rb.shape, rb.color, rb.bulletSize, rb.xReverse, rb.yReverse, rb.target, rb.type);
     }
@@ -77,7 +77,7 @@ public class BulletActorPool: ActorPool, BulletsManager {
       return;
     BulletMLRunner* runner = BulletMLRunner_new_state(state);
     registFunctions(runner);
-    ba.set(runner, Bullet.now.pos.x, Bullet.now.pos.y, deg, speed, 
+    ba.set(runner, Bullet.now.pos.x, Bullet.now.pos.y, deg, speed,
 	   rb.ranks[rb.morphIdx], rb.speeds[rb.morphIdx],
 	   rb.shape, rb.color, rb.bulletSize, rb.xReverse, rb.yReverse, rb.target, rb.type,
 	   rb.parser, rb.ranks, rb.speeds, rb.morphNum, rb.morphIdx);
@@ -86,7 +86,7 @@ public class BulletActorPool: ActorPool, BulletsManager {
   public BulletActor addTopBullet(BulletMLParser *parser[],
 				  float[] ranks, float[] speeds,
 				  float x, float y, float deg, float speed,
-				  int shape, int color, float size, 
+				  int shape, int color, float size,
 				  float xReverse, float yReverse,
 				  BulletTarget target, int type,
 				  int prevWait, int postWait) {
@@ -95,10 +95,10 @@ public class BulletActorPool: ActorPool, BulletsManager {
     BulletActor ba = cast(BulletActor) getInstance();
     if (!ba)
       return null;
-    ba.set(runner, x, y, deg, speed, 
-	   ranks[0], speeds[0], 
+    ba.set(runner, x, y, deg, speed,
+	   ranks[0], speeds[0],
 	   shape, color, size, xReverse, yReverse, target, type,
-	   parser, ranks, speeds, parser.length, 0);
+	   parser, ranks, speeds, cast(int)(parser.length), 0);
     ba.setWait(prevWait, postWait);
     ba.setTop();
     return ba;
@@ -111,7 +111,7 @@ public class BulletActorPool: ActorPool, BulletsManager {
     BulletActor ba = cast(BulletActor) getInstance();
     if (!ba)
       return null;
-    ba.set(runner, x, y, deg, 0, 
+    ba.set(runner, x, y, deg, 0,
 	   0, speed,
 	   0, 0, 0, 1, 1, target, BulletInst.Type.MOVE,
 	   null, null, null, 0, 0);
@@ -145,7 +145,7 @@ public class BulletActorPool: ActorPool, BulletsManager {
   public int getTurn() {
     return cnt;
   }
-  
+
   public void killMe(Bullet bullet) {
     assert((cast(BulletActor) actor[bullet.id]).bullet.id == bullet.id);
     (cast(BulletActor) actor[bullet.id]).remove();

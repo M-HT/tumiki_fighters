@@ -6,6 +6,7 @@
 module abagames.tf.gamemanager;
 
 private import std.math;
+private import std.conv;
 private import opengl;
 private import SDL;
 private import bulletml;
@@ -92,7 +93,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   int credit;
 
   // Initialize actor pools, load BGMs/SEfs and textures.
-  public void init() {
+  public override void init() {
     BarrageManager.loadBulletMLs();
     pad = cast(Pad) input;
     prefManager = cast(PrefManager) abstPrefManager;
@@ -101,29 +102,35 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     rand = new Rand;
     field = new Field;
     field.init();
-    auto ParticleInitializer pi = new ParticleInitializer;
+    Particle.initRand();
+    scope ParticleInitializer pi = new ParticleInitializer;
     particles = new ParticlePool(128, pi);
-    auto Fragment fragmentClass = new Fragment;
-    auto FragmentInitializer fi = new FragmentInitializer;
+    Fragment.initRand();
+    scope Fragment fragmentClass = new Fragment;
+    scope FragmentInitializer fi = new FragmentInitializer;
     fragments = new ActorPool(128, fragmentClass, fi);
+    Ship.initRand();
     ship = new Ship;
     ship.init(pad, field, particles, fragments, this);
-    auto SplinterInitializer si = new SplinterInitializer(ship, field, particles, this);
+    Splinter.initRand();
+    scope SplinterInitializer si = new SplinterInitializer(ship, field, particles, this);
     splinters = new SplinterPool(144, si);
-    auto BulletActorInitializer bi = new BulletActorInitializer(field, ship, particles, splinters);
+    scope BulletActorInitializer bi = new BulletActorInitializer(field, ship, particles, splinters);
     bullets = new BulletActorPool(512, bi);
     ship.setBulletActorPool(bullets);
     ship.initStuckEnemies(splinters);
     gauge = new DamageGauge;
-    auto EnemyInitializer ei = new EnemyInitializer
+    scope EnemyInitializer ei = new EnemyInitializer
       (this, field, bullets, ship, splinters, particles, fragments, gauge);
     enemies = new EnemyPool(64, ei);
     bullets.setEnemies(enemies);
-    auto ScoreSignInitializer ssi = new ScoreSignInitializer;
-    auto ScoreSign scoreSignClass = new ScoreSign;
+    scope ScoreSignInitializer ssi = new ScoreSignInitializer;
+    scope ScoreSign scoreSignClass = new ScoreSign;
     signs = new ActorPool(32, scoreSignClass, ssi);
-    auto MobileLetterInitializer mli = new MobileLetterInitializer;
+    MobileLetter.initRand();
+    scope MobileLetterInitializer mli = new MobileLetterInitializer;
     letters = new MobileLetterPool(32, mli, field);
+    StagePattern.initStr();
     stageManager = new StageManager(this, enemies, field);
     bullets.setStageManager(stageManager);
     attractManager = new AttractManager(pad, prefManager, this);
@@ -132,12 +139,12 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     LetterRender.createDisplayLists();
   }
 
-  public void start() {
+  public override void start() {
     stage = 0;
     startTitle();
   }
 
-  public void close() {
+  public override void close() {
     BarrageManager.unloadBulletMLs();
     SoundManager.close();
     LetterRender.deleteDisplayLists();
@@ -204,7 +211,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     state = State.IN_GAME;
   }
 
-  private const char[][] stageMessage = 
+  private string[] stageMessage =
     [
      "WE ARE TUMIKI FIGHTERS!",
      "JUST OVER THE HORIZON",
@@ -225,7 +232,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     gauge.init();
     bossTimer = BOSSTIMER_FREEZED;
     bossDstCnt = -1;
-    letters.add("STAGE " ~ std.string.toString(stage + 1), 180, 150, 24, 240, -4);
+    letters.add("STAGE " ~ to!string(stage + 1), 180, 150, 24, 240, -4);
     letters.add(stageMessage[stage], 320 - stageMessage[stage].length * 10, 270, 10, 240, -2);
     int si = stage % (SoundManager.STAGE_BGM_NUM * 2 - 1);
     if (si >= SoundManager.STAGE_BGM_NUM)
@@ -267,7 +274,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
       left++;
       if (extendScore <= firstExtend)
 	extendScore = everyExtend;
-      else 
+      else
 	extendScore += everyExtend;
     }
   }
@@ -306,7 +313,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   }
 
   // Move actors in game(called once per frame).
-  public void move() {
+  public override void move() {
     if (pad.keys[SDLK_ESCAPE] == SDL_PRESSED) {
       mainLoop.breakLoop();
       return;
@@ -325,6 +332,8 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
       break;
     case State.TITLE:
       moveTitle();
+      break;
+    default:
       break;
     }
     cnt++;
@@ -479,14 +488,15 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   }
 
   // Draw actors in game(called once per frame).
-  public void draw() {
+  public override void draw() {
     SDL_Event e = mainLoop.event;
     if (e.type == SDL_VIDEORESIZE) {
       SDL_ResizeEvent re = e.resize;
-      if (re.w > 150 && re.h > 100)
-	screen.resized(re.w, re.h);
+      if (re.w > 150 && re.h > 100) {
+        screen.resized(re.w, re.h);
+        screen.clear();
+      }
     }
-    screen.clear();
     screen.viewOrthoFixed();
     glDisable(GL_CULL_FACE);
     field.drawBack();
@@ -507,6 +517,8 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
       break;
     case State.TITLE:
       drawTitle();
+      break;
+    default:
       break;
     }
     glPopMatrix();
@@ -529,6 +541,8 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
       drawStatusTitle();
       break;
     case State.START_GAME:
+      break;
+    default:
       break;
     }
     glEnable(GL_CULL_FACE);
@@ -616,7 +630,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
 	LetterRender.drawString("YES", 483, 402, 8, LetterRender.Direction.TO_RIGHT, 2);
 	LetterRender.drawString("NO", 560, 400, 12, LetterRender.Direction.TO_RIGHT, 0);
       }
-      LetterRender.drawString("CREDIT " ~ std.string.toString(credit), 32, 420, 8, 
+      LetterRender.drawString("CREDIT " ~ to!string(credit), 32, 420, 8,
 			      LetterRender.Direction.TO_RIGHT, 3);
     }
   }

@@ -6,6 +6,7 @@
 module abagames.tf.attractmanager;
 
 private import std.string;
+private import std.conv;
 private import opengl;
 private import abagames.util.sdl.pad;
 private import abagames.tf.gamemanager;
@@ -65,7 +66,7 @@ public class AttractManager {
       if (dr > PrefManager.RANKING_NUM)
 	dr = PrefManager.RANKING_NUM;
       for (int i = 0; i < dr; i++) {
-	char[] rs = std.string.toString(i + 1);
+	char[] rs = to!string(i + 1).dup;
 	float x = 100;
 	float y = i * 30 + 32;
 	switch (i) {
@@ -86,19 +87,19 @@ public class AttractManager {
 	}
 	LetterRender.drawString
 	  (rs, x, y, 9, LetterRender.Direction.TO_RIGHT, 3);
-	LetterRender.drawNum(prefManager.ranking[i].score, 400, y, 9, 
+	LetterRender.drawNum(prefManager.ranking[i].score, 400, y, 9,
 			     LetterRender.Direction.TO_RIGHT, 3);
 	if (prefManager.ranking[i].stage >= StageManager.STAGE_NUM)
-	  rs = "A";
+	  rs = "A".dup;
 	else
-	  rs = std.string.toString(prefManager.ranking[i].stage + 1);
+	  rs = to!string(prefManager.ranking[i].stage + 1).dup;
 	LetterRender.drawString
 	  (rs, 500, y, 9, LetterRender.Direction.TO_RIGHT, 3);
       }
     }
   }
 
-  private const int[][] TITLE_PTN = 
+  private const int[][] TITLE_PTN =
     [
      [-4,-1,-1,-1,-1,-1,-1,-1,-1,-0,-0,-0,-0,-0,],
      [-0,-1,19,20,12, 8,10, 8,-1,-0,-0,-0,-0,-0,],
@@ -123,7 +124,7 @@ public class AttractManager {
     glScalef(s, s, s);
     int tx, ty;
     ty = 0;
-    foreach (int[] tpl; TITLE_PTN) {
+    foreach (const int[] tpl; TITLE_PTN) {
       tx = 0;
       foreach (int tp; tpl) {
 	int c = TITLE_CLR[ty][tx];

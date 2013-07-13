@@ -26,7 +26,7 @@ public class Fragment: Actor {
   int shape, color;
   int cnt;
 
-  public static this() {
+  public static void initRand() {
     rand = new Rand;
   }
 

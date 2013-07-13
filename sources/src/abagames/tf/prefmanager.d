@@ -5,7 +5,7 @@
  */
 module abagames.tf.prefmanager;
 
-private import std.stream;
+private import std.stdio;
 private import abagames.util.prefmanager;
 
 /**
@@ -14,13 +14,13 @@ private import abagames.util.prefmanager;
 public class PrefManager: abagames.util.prefmanager.PrefManager {
  public:
   static const int VERSION_NUM = 20;
-  static const char[] PREF_FILE = "tf.prf";
+  static string PREF_FILE = "tf.prf";
   static const int RANKING_NUM = 10;
   static const int DEFAULT_HISCORE = 10000;
   RankingItem[RANKING_NUM] ranking;
 
   public this() {
-    foreach (inout RankingItem ri; ranking)
+    foreach (ref RankingItem ri; ranking)
       ri = new RankingItem;
   }
 
@@ -34,16 +34,16 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
   }
 
   public void load() {
-    auto File fd = new File;
+    scope File fd;
     try {
-      int ver;
+      int read_data[1];
       fd.open(PREF_FILE);
-      fd.read(ver);
-      if (ver != VERSION_NUM)
-	throw new Error("Wrong version num");
+      fd.rawRead(read_data);
+      if (read_data[0] != VERSION_NUM)
+	throw new Exception("Wrong version num");
       foreach (RankingItem ri; ranking)
 	ri.load(fd);
-    } catch (Error e) {
+    } catch (Exception e) {
       init();
     } finally {
       fd.close();
@@ -51,12 +51,16 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
   }
 
   public void save() {
-    auto File fd = new File;
-    fd.create(PREF_FILE);
-    fd.write(VERSION_NUM);
-    foreach (RankingItem ri; ranking)
-      ri.save(fd);
-    fd.close();
+    scope File fd;
+    try {
+      fd.open(PREF_FILE, "wb");
+      const int write_data[1] = [VERSION_NUM];
+      fd.rawWrite(write_data);
+      foreach (RankingItem ri; ranking)
+        ri.save(fd);
+    } finally {
+      fd.close();
+    }
   }
 
   public void setHiScore(int sc, int st) {
@@ -66,7 +70,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
 	break;
     if (i >= RANKING_NUM)
       return;
-    for (int j = RANKING_NUM - 1; j > i; j--) 
+    for (int j = RANKING_NUM - 1; j > i; j--)
       ranking[j] = ranking[j - 1];
     ranking[i] = new RankingItem(sc, st);
   }
@@ -87,12 +91,14 @@ public class RankingItem {
   }
 
   public void save(File fd) {
-    fd.write(score);
-    fd.write(stage);
+    const int write_data[2] = [score, stage];
+    fd.rawWrite(write_data);
   }
 
   public void load(File fd) {
-    fd.read(score);
-    fd.read(stage);
+    int read_data[2];
+    fd.rawRead(read_data);
+    score = read_data[0];
+    stage = read_data[1];
   }
 }

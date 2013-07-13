@@ -6,6 +6,7 @@
 module abagames.util.sdl.sound;
 
 private import std.string;
+private import std.conv;
 private import SDL;
 private import SDL_mixer;
 private import abagames.util.sdl.sdlexception;
@@ -28,7 +29,7 @@ public abstract class Sound {
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
       noSound = 1;
       throw new SDLInitFailedException
-	("Unable to initialize SDL_AUDIO: " ~ std.string.toString(SDL_GetError()));
+	("Unable to initialize SDL_AUDIO: " ~ to!string(SDL_GetError()));
     }
     audio_rate = 44100;
     audio_format = AUDIO_S16;
@@ -37,7 +38,7 @@ public abstract class Sound {
     if (Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) < 0) {
       noSound = 1;
       throw new SDLInitFailedException
-	("Couldn't open audio: " ~ std.string.toString(SDL_GetError()));
+	("Couldn't open audio: " ~ to!string(SDL_GetError()));
     }
     Mix_QuerySpec(&audio_rate, &audio_format, &audio_channels);
   }
@@ -51,8 +52,8 @@ public abstract class Sound {
     Mix_CloseAudio();
   }
 
-  public abstract void load(char[] name);
-  public abstract void load(char[] name, int ch);
+  public abstract void load(const char[] name);
+  public abstract void load(const char[] name, int ch);
   public abstract void free();
   public abstract void play();
   public abstract void fade();
@@ -62,34 +63,34 @@ public abstract class Sound {
 public class Music: Sound {
  public:
   static int fadeOutSpeed = 1280;
-  static char[] dir = "sounds/";
+  static string dir = "sounds/";
  private:
   Mix_Music* music;
 
-  public void load(char[] name) {
+  public override void load(const char[] name) {
     if (noSound)
       return;
-    char[] fileName = dir ~ name;
+    const char[] fileName = dir ~ name;
     music = Mix_LoadMUS(std.string.toStringz(fileName));
     if (!music) {
       noSound = true;
-      throw new SDLInitFailedException("Couldn't load: " ~ fileName ~ 
-				       " (" ~ std.string.toString(Mix_GetError()) ~ ")");
+      throw new SDLInitFailedException("Couldn't load: " ~ fileName ~
+				       " (" ~ to!string(Mix_GetError()) ~ ")");
     }
   }
-  
-  public void load(char[] name, int ch) {
+
+  public override void load(const char[] name, int ch) {
     load(name);
   }
 
-  public void free() {
+  public override void free() {
     if (music) {
       halt();
       Mix_FreeMusic(music);
     }
   }
 
-  public void play() {
+  public override void play() {
     if (noSound) return;
     Mix_PlayMusic(music, -1);
   }
@@ -99,11 +100,11 @@ public class Music: Sound {
     Mix_PlayMusic(music, 1);
   }
 
-  public void fade() {
+  public override void fade() {
     Music.fadeMusic();
   }
 
-  public void halt() {
+  public override void halt() {
     Music.haltMusic();
   }
 
@@ -122,46 +123,46 @@ public class Music: Sound {
 
 public class Chunk: Sound {
  public:
-  static char[] dir = "sounds/";
+  static string dir = "sounds/";
  private:
   Mix_Chunk* chunk;
   int chunkChannel;
 
-  public void load(char[] name) {
+  public override void load(const char[] name) {
     load(name, 0);
   }
-  
-  public void load(char[] name, int ch) {
+
+  public override void load(const char[] name, int ch) {
     if (noSound)
       return;
-    char[] fileName = dir ~ name;
+    const char[] fileName = dir ~ name;
     chunk = Mix_LoadWAV(std.string.toStringz(fileName));
     if (!chunk) {
       noSound = true;
-      throw new SDLInitFailedException("Couldn't load: " ~ fileName ~ 
-				       " (" ~ std.string.toString(Mix_GetError()) ~ ")");
+      throw new SDLInitFailedException("Couldn't load: " ~ fileName ~
+				       " (" ~ to!string(Mix_GetError()) ~ ")");
     }
     chunkChannel = ch;
   }
 
-  public void free() {
+  public override void free() {
     if (chunk) {
       halt();
       Mix_FreeChunk(chunk);
     }
   }
 
-  public void play() {
+  public override void play() {
     if (noSound) return;
     Mix_PlayChannel(chunkChannel, chunk, 0);
   }
 
-  public void halt() {
+  public override void halt() {
     if (noSound) return;
     Mix_HaltChannel(chunkChannel);
   }
 
-  public void fade() {
+  public override void fade() {
     halt();
   }
 }

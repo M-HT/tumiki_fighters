@@ -40,7 +40,7 @@ public class Splinter: Actor {
   bool isBoss;
   bool flyin;
 
-  public static this() {
+  public static void initRand() {
     rand = new Rand;
   }
 
@@ -60,7 +60,7 @@ public class Splinter: Actor {
     manager = si.manager;
     pos = new Vector;
     vel = new Vector;
-    foreach (inout Vector cd; colDatums)
+    foreach (ref Vector cd; colDatums)
       cd = new Vector;
   }
 
@@ -153,8 +153,8 @@ public class Splinter: Actor {
       }
       if (ship.cnt < -Ship.INVINCIBLE_CNT)
 	return;
-      foreach (Vector cd; colDatums) {
-	if (ship.stuckEnemies.checkHit(cd)) {
+      foreach (Vector cd2; colDatums) {
+	if (ship.stuckEnemies.checkHit(cd2)) {
 	  StuckEnemy se = cast(StuckEnemy) ship.stuckEnemies.getInstance();
 	  if (se) {
 	    float ox = pos.x - ship.pos.x, oy = pos.y - ship.pos.y;
@@ -199,9 +199,9 @@ public class Splinter: Actor {
   }
 
   public bool checkHit(Vector pos) {
-    if (pos.checkSide(colDatums[0], colDatums[1]) * 
+    if (pos.checkSide(colDatums[0], colDatums[1]) *
 	pos.checkSide(colDatums[3], colDatums[2]) < 0 &&
-	pos.checkSide(colDatums[1], colDatums[2]) * 
+	pos.checkSide(colDatums[1], colDatums[2]) *
 	pos.checkSide(colDatums[0], colDatums[3]) < 0)
       return true;
     else
@@ -226,9 +226,9 @@ public class SplinterInitializer: ActorInitializer {
 
 public class SplinterPool: ActorPool {
  private:
-  
+
   public this(int n, ActorInitializer ini) {
-    auto Splinter splinterClass = new Splinter;
+    scope Splinter splinterClass = new Splinter;
     super(n, splinterClass, ini);
   }
 

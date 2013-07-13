@@ -6,6 +6,7 @@
 module abagames.tf.stagemanager;
 
 private import std.string;
+private import std.conv;
 private import std.math;
 private import bulletml;
 private import abagames.util.logger;
@@ -52,13 +53,13 @@ public class StageManager {
     this.enemies = enemies;
     this.field = field;
     rand = new Rand;
-    foreach (inout EnemyAppearance ea; appearance)
+    foreach (ref EnemyAppearance ea; appearance)
       ea = new EnemyAppearance;
     eaIdx = appearance.length;
     uint sn = 1;
-    foreach (inout StagePattern sp; stage) {
-      Logger.info("Load stage: " ~ std.string.toString(sn));
-      sp = new StagePattern("stg" ~ std.string.toString(sn) ~ ".stg");
+    foreach (ref StagePattern sp; stage) {
+      Logger.info("Load stage: " ~ to!string(sn));
+      sp = new StagePattern("stg" ~ to!string(sn) ~ ".stg");
       sn++;
     }
     Logger.info("Load stages completed.");
@@ -133,6 +134,8 @@ public class StageManager {
 	  x = field.size.x * (p.pos + rand.nextSignedFloat(p.width));
 	  y = field.size.y - p.spec.sizeYm * 1.1f;
 	  break;
+	default:
+	  break;
 	}
 	if (!ea.wait)
 	  addEnemy(x, y, p.spec, p.move, ea.isBoss);
@@ -171,10 +174,10 @@ public class StagePattern {
   long randSeed;
   int warningCnt;
  private:
-  static const char[] STAGE_DIR_NAME = "stage";
-  static int[char[]] posTypeStr;
+  static string STAGE_DIR_NAME = "stage";
+  static int[string] posTypeStr;
 
-  public static this() {
+  public static void initStr() {
     posTypeStr["f"] = 0;
     posTypeStr["u"] = 1;
   }
@@ -188,18 +191,18 @@ public class StagePattern {
   // (use PointsMovePattern when moveBulletML == "p", end when x == "e", idx == "e")
   public this(char[][] data) {
     StringIterator si = new StringIterator(data);
-    randSeed = atoi(si.next);
-    warningCnt = atoi(si.next);
+    randSeed = to!int(si.next);
+    warningCnt = to!int(si.next);
     for (;;) {
       if (!si.hasNext)
 	break;
-      int startTime = atoi(si.next);
-      int duration = atoi(si.next);
-      int interval = atoi(si.next);
+      int startTime = to!int(si.next);
+      int duration = to!int(si.next);
+      int interval = to!int(si.next);
       char[] v = si.next;
       int posType = posTypeStr[v];
-      float pos = atof(si.next);
-      float width = atof(si.next);
+      float pos = to!float(si.next);
+      float width = to!float(si.next);
       v = si.next;
       bool wted;
       if (v == "y")
@@ -207,34 +210,34 @@ public class StagePattern {
       else
 	wted = false;
       v = si.next;
-      EnemySpec es = EnemySpec.getInstance(v);
+      EnemySpec es = EnemySpec.getInstance(v.idup);
       EnemyAppearancePattern eap = new EnemyAppearancePattern
 	(startTime, duration, interval, posType, pos, width, wted, es);
       float d;
       v = si.next;
       if (v == "p") {
 	eap.startSetPointsMove();
-	eap.setWithdrawCnt(atoi(si.next));
+	eap.setWithdrawCnt(to!int(si.next));
 	int atIdx = PointsMovePattern.BASIC_PATTERN_IDX;
 	for (;;) {
-	  float speed = atof(si.next);
+	  float speed = to!float(si.next);
 	  eap.setMoveSpeed(atIdx, speed);
 	  for (;;) {
 	    v = si.next;
 	    if (v == "e")
 	      break;
-	    float x = atof(v);
-	    float y = atof(si.next);
+	    float x = to!float(v);
+	    float y = to!float(si.next);
 	    eap.addMovePoint(atIdx, x, y);
 	  }
 	  v = si.next;
 	  if (v == "e")
 	    break;
-	  atIdx = atoi(v);
+	  atIdx = to!int(v);
 	}
       } else {
-	eap.setMoveBulletML(v);
-	eap.setSpeedRank(atof(si.next));
+	eap.setMoveBulletML(v.idup);
+	eap.setSpeedRank(to!float(si.next));
       }
       switch (posType) {
       case EnemyAppearancePattern.AppearancePos.FRONT:
@@ -243,13 +246,15 @@ public class StagePattern {
       case EnemyAppearancePattern.AppearancePos.TOP:
 	d = PI;
 	break;
+      default:
+	break;
       }
       eap.setInitialDeg(d);
       pattern ~= eap;
     }
   }
 
-  public this(char[] fileName) {
+  public this(string fileName) {
     char[][] data = CSVTokenizer.readFile(STAGE_DIR_NAME ~ "/" ~ fileName);
     this(data);
   }
@@ -298,7 +303,7 @@ public class EnemyAppearancePattern {
     (cast(PointsMovePattern) move).point[idx] ~= new Vector(x, y);
   }
 
-  public void setMoveBulletML(char[] fn) {
+  public void setMoveBulletML(string fn) {
     move = new BulletMLMovePattern;
     (cast(BulletMLMovePattern) move).parser = BarrageManager.getInstance(fn);
     if (!(cast(BulletMLMovePattern) move).parser)

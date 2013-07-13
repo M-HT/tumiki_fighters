@@ -10,27 +10,26 @@ private import std.path;
 private import std.file;
 private import bulletml;
 private import abagames.util.logger;
-private import abagames.tf.morphbullet;
 
 /**
  * Barrage manager(BulletMLs' loader).
  */
 public class BarrageManager {
  private:
-  static BulletMLParserTinyXML *parser[char[]];
-  static const char[] BARRAGE_DIR_NAME = "barrage";
+  static BulletMLParserTinyXML *parser[string];
+  static string BARRAGE_DIR_NAME = "barrage";
 
   public static void loadBulletMLs() {
-    char[][] dirs = listdir(BARRAGE_DIR_NAME);
-    foreach (char[] dirName; dirs) {
-      char[][] files = listdir(BARRAGE_DIR_NAME ~ "/" ~ dirName);
-      foreach (char[] fileName; files) {
-	if (getExt(fileName) != "xml")
+    auto dirs = dirEntries(BARRAGE_DIR_NAME, SpanMode.shallow);
+    foreach (string dirName; dirs) {
+      auto files = dirEntries(dirName, SpanMode.shallow);
+      foreach (string fileName; files) {
+	if (extension(fileName) != ".xml")
 	  continue;
-	char[] barrageName = dirName ~ "/" ~ fileName;
+	string barrageName = baseName(dirName) ~ "/" ~ baseName(fileName);
 	Logger.info("Load BulletML: " ~ barrageName);
-	parser[barrageName] = 
-	  BulletMLParserTinyXML_new(std.string.toStringz(BARRAGE_DIR_NAME ~ "/" ~ barrageName));
+	parser[barrageName] =
+	  BulletMLParserTinyXML_new(std.string.toStringz(fileName));
 	BulletMLParserTinyXML_parse(parser[barrageName]);
       }
     }
@@ -42,7 +41,7 @@ public class BarrageManager {
     }
   }
 
-  public static BulletMLParserTinyXML* getInstance(char[] fileName) {
+  public static BulletMLParserTinyXML* getInstance(string fileName) {
     return parser[fileName];
   }
 }

@@ -18,7 +18,7 @@ public class ActorPool {
 
   public this(int n, Actor act, ActorInitializer ini) {
     actor = new Actor[n];
-    foreach (inout Actor a; actor) {
+    foreach (ref Actor a; actor) {
       a = act.newActor();
       a.isExist = false;
       a.init(ini);
@@ -30,8 +30,8 @@ public class ActorPool {
     for (int i = 0; i < actor.length; i++) {
       actorIdx--;
       if (actorIdx < 0)
-	actorIdx = actor.length - 1;
-      if (!actor[actorIdx].isExist) 
+	actorIdx = cast(int)(actor.length - 1);
+      if (!actor[actorIdx].isExist)
 	return actor[actorIdx];
     }
     return null;
@@ -40,7 +40,7 @@ public class ActorPool {
   public Actor getInstanceForced() {
     actorIdx--;
     if (actorIdx < 0)
-      actorIdx = actor.length - 1;
+      actorIdx = cast(int)(actor.length - 1);
     return actor[actorIdx];
   }
 

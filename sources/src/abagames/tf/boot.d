@@ -6,6 +6,7 @@
 module abagames.tf.boot;
 
 private import std.string;
+private import std.conv;
 private import std.c.stdlib;
 private import abagames.util.logger;
 private import abagames.util.sdl.mainloop;
@@ -25,12 +26,12 @@ GameManager gameManager;
 PrefManager prefManager;
 MainLoop mainLoop;
 
-private void usage(char[] args0) {
+private void usage(string args0) {
   Logger.error
     ("Usage: " ~ args0 ~ " [-brightness [0-100]] [-window] [-res x y] [-nosound] [-reverse]");
 }
 
-private void parseArgs(char[][] args) {
+private void parseArgs(string[] args) {
   for (int i = 1; i < args.length; i++) {
     switch (args[i]) {
     case "-brightness":
@@ -39,7 +40,7 @@ private void parseArgs(char[][] args) {
 	throw new Exception("Invalid options");
       }
       i++;
-      float b = cast(float) atoi(args[i]) / 100;
+      float b = cast(float) to!int(args[i]) / 100;
       if (b < 0 || b > 1) {
 	usage(args[0]);
 	throw new Exception("Invalid options");
@@ -55,9 +56,9 @@ private void parseArgs(char[][] args) {
 	throw new Exception("Invalid options");
       }
       i++;
-      int w = atoi(args[i]);
+      int w = to!int(args[i]);
       i++;
-      int h = atoi(args[i]);
+      int h = to!int(args[i]);
       Screen.width = w;
       Screen.height = h;
       break;
@@ -77,7 +78,7 @@ private void parseArgs(char[][] args) {
   }
 }
 
-public int boot(char[][] args) {
+public int boot(string[] args) {
   screen = new Screen;
   input = new Pad;
   try {
@@ -112,17 +113,17 @@ public int WinMain(HINSTANCE hInstance,
 	    LPSTR lpCmdLine,
 	    int nCmdShow) {
   int result;
-  
+
   gc_init();
   _minit();
   try {
     _moduleCtor();
     char exe[4096];
     GetModuleFileNameA(null, exe, 4096);
-    char[][1] prog;
-    prog[0] = std.string.toString(exe);
-    result = boot(prog ~ std.string.split(std.string.toString(lpCmdLine)));
-  } catch (Object o) {
+    string[1] prog;
+    prog[0] = to!string(exe);
+    result = boot(prog ~ std.string.split(to!string(lpCmdLine)));
+  } catch (Exception o) {
     //Logger.error("Exception: " ~ o.toString());
     Logger.info("Exception: " ~ o.toString());
     result = EXIT_FAILURE;
@@ -134,7 +135,7 @@ public int WinMain(HINSTANCE hInstance,
 } else {
 
 // Boot as the general executable.
-public int main(char[][] args) {
+public int main(string[] args) {
   return boot(args);
 }
 

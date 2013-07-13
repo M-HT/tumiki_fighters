@@ -69,9 +69,9 @@ public class StuckEnemy: Actor {
     lofs = new Vector;
     pos = new Vector;
     target = new VirtualBulletTarget;
-    foreach (inout Vector cd; colDatums)
+    foreach (ref Vector cd; colDatums)
       cd = new Vector;
-    foreach (inout EnemyTopBullet etb; topBullet)
+    foreach (ref EnemyTopBullet etb; topBullet)
       etb = new EnemyTopBullet;
   }
 
@@ -166,7 +166,7 @@ public class StuckEnemy: Actor {
       md = SPLINTER_FLYIN_MOVE_DEG_MAX;
     else if (md < -SPLINTER_FLYIN_MOVE_DEG_MAX)
       md = -SPLINTER_FLYIN_MOVE_DEG_MAX;
-    sp.set(pos, 
+    sp.set(pos,
 	   lofs.x * SPLINTER_FLYIN_RATIO_X,
 	   lofs.y * SPLINTER_FLYIN_RATIO_Y + SPLINTER_FLYIN_MOVE_Y,
 	   deg, md, tumikiSet, barragePtnIdx);
@@ -247,13 +247,13 @@ public class StuckEnemy: Actor {
 	tumikiSet.drawShade(pos, 0.2, 1, deg, stuckEnemies.pullInRatio);
       else
 	tumikiSet.draw(pos, 0.2, deg);
-    }  
+    }
   }
 
   public bool checkHit(Vector pos) {
-    if (pos.checkSide(colDatums[0], colDatums[1]) * 
+    if (pos.checkSide(colDatums[0], colDatums[1]) *
 	pos.checkSide(colDatums[3], colDatums[2]) < 0 &&
-	pos.checkSide(colDatums[1], colDatums[2]) * 
+	pos.checkSide(colDatums[1], colDatums[2]) *
 	pos.checkSide(colDatums[0], colDatums[3]) < 0)
       return true;
     else
@@ -328,7 +328,7 @@ public class StuckEnemyPool: ActorPool {
   GameManager manager;
 
   public this(int n, ActorInitializer ini) {
-    auto StuckEnemy seClass = new StuckEnemy;
+    scope StuckEnemy seClass = new StuckEnemy;
     super(n, seClass, ini);
     manager = (cast(StuckEnemyInitializer) ini).manager;
   }

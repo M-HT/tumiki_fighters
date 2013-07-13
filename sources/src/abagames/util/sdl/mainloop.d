@@ -76,7 +76,7 @@ public class MainLoop {
     int i;
     long nowTick;
     int frame;
-    
+
     screen.initSDL();
     initFirst();
     gameManager.start();
@@ -91,7 +91,7 @@ public class MainLoop {
       frame = cast(int) (nowTick-prvTickCount) / interval;
       if (frame <= 0) {
 	frame = 1;
-	SDL_Delay(prvTickCount+interval-nowTick);
+	SDL_Delay(cast(uint)(prvTickCount+interval-nowTick));
 	if (accframe) {
 	  prvTickCount = SDL_GetTicks();
 	} else {

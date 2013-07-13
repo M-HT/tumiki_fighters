@@ -5,8 +5,8 @@
  */
 module abagames.util.logger;
 
-private import std.stream;
-private import std.string;
+private import std.stdio;
+private import std.conv;
 
 /**
  * Logger(error/info).
@@ -18,24 +18,24 @@ import std.c.windows.windows;
 
 public class Logger {
 
-  public static void info(char[] msg) {
+  public static void info(const char[] msg) {
     // Win32 exe file crashes if it writes something to stderr.
-    //stderr.writeLine("Info: " ~ msg);
+    //stderr.writeln("Info: " ~ msg);
   }
 
   public static void info(int n) {
-    //stderr.writeLine("Info: " ~ std.string.toString(n));
+    //stderr.writeln("Info: " ~ to!string(n));
   }
 
   public static void info(float n) {
-    //stderr.writeLine("Info: -" ~ std.string.toString(n));
+    //stderr.writeln("Info: -" ~ to!string(n));
   }
 
-  private static void putMessage(char[] msg) {
+  private static void putMessage(const char[] msg) {
     MessageBoxA(null, std.string.toStringz(msg), "Error", MB_OK | MB_ICONEXCLAMATION);
   }
 
-  public static void error(char[] msg) {
+  public static void error(const char[] msg) {
     putMessage("Error: " ~ msg);
   }
 
@@ -52,30 +52,30 @@ public class Logger {
 
 public class Logger {
 
-  public static void info(char[] msg) {
-    stderr.writeLine("Info: " ~ msg);
+  public static void info(const char[] msg) {
+    stderr.writeln("Info: " ~ msg);
   }
 
   public static void info(int n) {
-    stderr.writeLine("Info: " ~ std.string.toString(n));
+    stderr.writeln("Info: " ~ to!string(n));
   }
 
   public static void info(float n) {
-    stderr.writeLine("Info: -" ~ std.string.toString(n));
+    stderr.writeln("Info: -" ~ to!string(n));
   }
 
-  public static void error(char[] msg) {
-    stderr.writeLine("Error: " ~ msg);
+  public static void error(const char[] msg) {
+    stderr.writeln("Error: " ~ msg);
   }
 
   public static void error(Exception e) {
-    stderr.writeLine("Error: " ~ e.toString());
+    stderr.writeln("Error: " ~ e.toString());
   }
 
   public static void error(Error e) {
-    stderr.writeLine("Error: " ~ e.toString());
+    stderr.writeln("Error: " ~ e.toString());
     if (e.next)
-      error(e.next);
+      error(cast(Error)e.next);
   }
 }
 
