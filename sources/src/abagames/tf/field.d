@@ -8,7 +8,11 @@ module abagames.tf.field;
 private import std.string;
 private import std.conv;
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.vector;
 private import abagames.util.actor;
 private import abagames.util.actorpool;
@@ -110,39 +114,104 @@ public class Field {
   }
 
   public void drawBack() {
-    glBegin(GL_QUADS);
-    Screen.setColor(pattern.gr, pattern.gg, pattern.gb);
-    glVertex3f(0, 480, 0);
-    glVertex3f(640, 480, 0);
-    float gy1 = 400 - groundY;
-    glVertex3f(640, gy1, 0);
-    glVertex3f(0, gy1, 0);
-    glVertex3f(0, gy1, 0);
-    glVertex3f(640, gy1, 0);
-    Screen.setColor(pattern.mrr, pattern.mrg, pattern.mrb);
-    float gy2 = GROUND_Y - groundY;
-    glVertex3f(640, gy2, 0);
-    glVertex3f(0, gy2, 0);
-    glEnd();
+    const float gy1 = 400 - groundY;
+    const float gy2 = GROUND_Y - groundY;
+    const int quadNumVertices = 4;
+    const GLfloat[3*quadNumVertices][2] quadVertices =
+      [[ // first quad
+          0, 480, 0,
+        640, 480, 0,
+        640, gy1, 0,
+          0, gy1, 0
+       ],
+       [ // second quad
+          0, gy1, 0,
+        640, gy1, 0,
+        640, gy2, 0,
+          0, gy2, 0
+       ]
+      ];
+    GLfloat[4*quadNumVertices][2] quadColors;
+    int trianglesNumTriangles;
+    const int trianglesNumVertices = 3 * cast(int)(backMountPos.length / 2);
+    GLfloat[3*trianglesNumVertices] trianglesVertices;
+    GLfloat[4*trianglesNumVertices] trianglesColors;
+
+    foreach (i; 0..2) {
+      foreach (j; 0..quadNumVertices) {
+        if ((i == 0) || (j < 2)) {
+          quadColors[i][j*4 + 0] = pattern.gr * Screen.brightness;
+          quadColors[i][j*4 + 1] = pattern.gg * Screen.brightness;
+          quadColors[i][j*4 + 2] = pattern.gb * Screen.brightness;
+        } else {
+          quadColors[i][j*4 + 0] = pattern.mrr * Screen.brightness;
+          quadColors[i][j*4 + 1] = pattern.mrg * Screen.brightness;
+          quadColors[i][j*4 + 2] = pattern.mrb * Screen.brightness;
+        }
+        quadColors[i][j*4 + 3] = 1;
+      }
+    }
+
+    trianglesNumTriangles = 0;
     int idx = 0;
-    glBegin(GL_TRIANGLES);
-    for (int i = 0; i < backMountPos.length / 2; i++) {
-      float x1 = (backMountPos[idx].x - mnx);
-      float x2 = (backMountPos[idx + 1].x - mnx);
-      float x3 = (backMountPos[idx + 2].x - mnx);
+    foreach (i; 0..trianglesNumVertices) {
+      if (idx + 2 >= cast(int)(backMountPos.length))
+        break;
+      const float x1 = (backMountPos[idx].x - mnx);
+      const float x2 = (backMountPos[idx + 1].x - mnx);
+      const float x3 = (backMountPos[idx + 2].x - mnx);
       if (x1 >= 640)
-	break;
+        break;
       if (x3 >= 0) {
-	Screen.setColor(pattern.mrr, pattern.mrg, pattern.mrb);
-	glVertex3f(x1, backMountPos[idx].y - groundY, 0);
-	Screen.setColor(pattern.mtr, pattern.mtg, pattern.mtb);
-	glVertex3f(x2, backMountPos[idx + 1].y - groundY, 0);
-	Screen.setColor(pattern.mrr, pattern.mrg, pattern.mrb);
-	glVertex3f(x3, backMountPos[idx + 2].y - groundY, 0);
+        trianglesVertices[3*trianglesNumTriangles + 0] = x1;
+        trianglesVertices[3*trianglesNumTriangles + 1] = backMountPos[idx].y - groundY;
+        trianglesVertices[3*trianglesNumTriangles + 2] = 0;
+
+        trianglesVertices[3*trianglesNumTriangles + 3] = x2;
+        trianglesVertices[3*trianglesNumTriangles + 4] = backMountPos[idx + 1].y - groundY;
+        trianglesVertices[3*trianglesNumTriangles + 5] = 0;
+
+        trianglesVertices[3*trianglesNumTriangles + 6] = x3;
+        trianglesVertices[3*trianglesNumTriangles + 7] = backMountPos[idx + 2].y - groundY;
+        trianglesVertices[3*trianglesNumTriangles + 8] = 0;
+
+        trianglesColors[4*trianglesNumTriangles + 0] = pattern.mrr * Screen.brightness;
+        trianglesColors[4*trianglesNumTriangles + 1] = pattern.mrg * Screen.brightness;
+        trianglesColors[4*trianglesNumTriangles + 2] = pattern.mrb * Screen.brightness;
+        trianglesColors[4*trianglesNumTriangles + 3] = 1;
+
+        trianglesColors[4*trianglesNumTriangles + 4] = pattern.mtr * Screen.brightness;
+        trianglesColors[4*trianglesNumTriangles + 5] = pattern.mtg * Screen.brightness;
+        trianglesColors[4*trianglesNumTriangles + 6] = pattern.mtb * Screen.brightness;
+        trianglesColors[4*trianglesNumTriangles + 7] = 1;
+
+        trianglesColors[4*trianglesNumTriangles + 8] = pattern.mrr * Screen.brightness;
+        trianglesColors[4*trianglesNumTriangles + 9] = pattern.mrg * Screen.brightness;
+        trianglesColors[4*trianglesNumTriangles + 10] = pattern.mrb * Screen.brightness;
+        trianglesColors[4*trianglesNumTriangles + 11] = 1;
+
+        trianglesNumTriangles += 3;
       }
       idx += 2;
     }
-    glEnd();
+
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    foreach (i; 0..2) {
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(quadVertices[i].ptr));
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(quadColors[i].ptr));
+      glDrawArrays(GL_TRIANGLE_FAN, 0, quadNumVertices);
+    }
+
+    if (trianglesNumTriangles) {
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(trianglesVertices.ptr));
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(trianglesColors.ptr));
+      glDrawArrays(GL_TRIANGLES, 0, trianglesNumTriangles);
+    }
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
   public bool checkHit(Vector p) {

@@ -5,7 +5,11 @@
  */
 module abagames.tf.damagegauge;
 
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.tf.enemy;
 private import abagames.tf.tumiki;
 private import abagames.tf.tumikiset;
@@ -84,9 +88,7 @@ public class DamageGauge {
 	  glPushMatrix();
 	  glTranslatef(sx1 + sx2 / 2, y - 0.4, 1 + i * 0.1);
 	  glScalef(sx2 - sx1, 0.4, 1);
-	  glCallList(Tumiki.displayListIdx +
-		     ((3 + i) % Tumiki.COLOR_NUM) * Tumiki.SHAPE_NUM +
-		     3 * Tumiki.COLOR_NUM * Tumiki.SHAPE_NUM);
+	  Tumiki.drawShape(0, (3 + i) % Tumiki.COLOR_NUM, 3);
 	  glPopMatrix();
 	}
       }

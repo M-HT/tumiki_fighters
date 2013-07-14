@@ -7,7 +7,11 @@ module abagames.tf.gamemanager;
 
 private import std.math;
 private import std.conv;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import SDL;
 private import bulletml;
 private import abagames.util.rand;
@@ -135,8 +139,8 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     bullets.setStageManager(stageManager);
     attractManager = new AttractManager(pad, prefManager, this);
     SoundManager.init(this);
-    Tumiki.createDisplayLists();
-    LetterRender.createDisplayLists();
+    LetterRender.prepareLetters();
+    Tumiki.prepareShapes();
   }
 
   public override void start() {
@@ -147,8 +151,6 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
   public override void close() {
     BarrageManager.unloadBulletMLs();
     SoundManager.close();
-    LetterRender.deleteDisplayLists();
-    Tumiki.deleteDisplayLists();
   }
 
   private void startTitle() {
@@ -561,9 +563,11 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     ship.draw();
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
-    glBegin(GL_QUADS);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
     particles.draw();
-    glEnd();
+    glDisableClientState(GL_VERTEX_ARRAY);
+
     glDisable(GL_BLEND);
     fragments.draw();
     bullets.drawShots();
@@ -583,9 +587,11 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     enemies.draw();
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
-    glBegin(GL_QUADS);
+
+    glEnableClientState(GL_VERTEX_ARRAY);
     particles.draw();
-    glEnd();
+    glDisableClientState(GL_VERTEX_ARRAY);
+
     glDisable(GL_BLEND);
     fragments.draw();
     bullets.drawShots();

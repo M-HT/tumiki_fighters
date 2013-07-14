@@ -8,7 +8,13 @@ module abagames.util.sdl.screen3d;
 private import std.string;
 private import std.conv;
 private import SDL;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+  private import eglport;
+  alias glFrustumf glFrustum;
+} else {
+  private import opengl;
+}
 private import abagames.util.logger;
 private import abagames.util.sdl.screen;
 private import abagames.util.sdl.sdlexception;
@@ -38,14 +44,25 @@ public class Screen3D: Screen {
     }
     // Create an OpenGL screen.
     Uint32 videoFlags;
-    if (windowMode) {
-      videoFlags = SDL_OPENGL | SDL_RESIZABLE;
+    version (USE_GLES) {
+      videoFlags = SDL_SWSURFACE;
     } else {
-      videoFlags = SDL_OPENGL | SDL_FULLSCREEN;
+      videoFlags = SDL_OPENGL;
+    }
+    if (windowMode) {
+      videoFlags |= SDL_RESIZABLE;
+    } else {
+      videoFlags |= SDL_FULLSCREEN;
     }
     if (SDL_SetVideoMode(width, height, 0, videoFlags) == null) {
       throw new SDLInitFailedException
 	("Unable to create SDL screen: " ~ to!string(SDL_GetError()));
+    }
+    version (USE_GLES) {
+      if (EGL_Open(cast(ushort)physical_width, cast(ushort)physical_height) != 0) {
+        throw new SDLInitFailedException(
+	  "Unable to open EGL context");
+      }
     }
     glViewport(0, 0, width, height);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -76,12 +93,19 @@ public class Screen3D: Screen {
 
   public void closeSDL() {
     close();
+    version (USE_GLES) {
+      EGL_Close();
+    }
     SDL_ShowCursor(SDL_ENABLE);
   }
 
   public void flip() {
     handleError();
-    SDL_GL_SwapBuffers();
+    version (USE_GLES) {
+      EGL_SwapBuffers();
+    } else {
+      SDL_GL_SwapBuffers();
+    }
   }
 
   public void clear() {
@@ -100,7 +124,7 @@ public class Screen3D: Screen {
   }
 
   public static void setColor(float r, float g, float b) {
-    glColor3f(r * brightness, g * brightness, b * brightness);
+    glColor4f(r * brightness, g * brightness, b * brightness, 1);
   }
 
   public static void setColor(float r, float g, float b, float a) {

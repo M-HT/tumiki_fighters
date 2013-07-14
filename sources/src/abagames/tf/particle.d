@@ -6,7 +6,11 @@
 module abagames.tf.particle;
 
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.actor;
@@ -93,10 +97,17 @@ public class Particle: Actor {
     default:
       break;
     }
-    glVertex3f(pos.x - size, pos.y - size, 0);
-    glVertex3f(pos.x + size, pos.y - size, 0);
-    glVertex3f(pos.x + size, pos.y + size, 0);
-    glVertex3f(pos.x - size, pos.y + size, 0);
+
+    const int quadNumVertices = 4;
+    const GLfloat[3*quadNumVertices] quadVertices =
+      [pos.x - size, pos.y - size, 0,
+       pos.x + size, pos.y - size, 0,
+       pos.x + size, pos.y + size, 0,
+       pos.x - size, pos.y + size, 0
+      ];
+
+    glVertexPointer(3, GL_FLOAT, 0, cast(void *)(quadVertices.ptr));
+    glDrawArrays(GL_TRIANGLE_FAN, 0, quadNumVertices);
   }
 }
 

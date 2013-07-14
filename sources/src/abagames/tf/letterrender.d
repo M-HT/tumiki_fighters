@@ -5,7 +5,12 @@
  */
 module abagames.tf.letterrender;
 
-private import opengl;
+private import std.math;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.rand;
 private import abagames.tf.screen;
 private import abagames.tf.tumiki;
@@ -15,14 +20,15 @@ private import abagames.tf.tumiki;
  */
 public class LetterRender {
  public:
-  static int displayListIdx;
   static const float LETTER_WIDTH = 2.1f;
   static const float LETTER_HEIGHT = 3.0f;
   static const int COLOR_NUM = 6;
-  static const int LETTER_NUM = 43;
  private:
-  static const int DISPLAY_LIST_NUM = LETTER_NUM * COLOR_NUM;
+  static const int LETTER_NUM = 43;
   static Rand rand;
+  static const int boxNumVertices = 4;
+  static GLfloat[3*boxNumVertices][][LETTER_NUM][COLOR_NUM] letterVertices;
+  static GLfloat[4*boxNumVertices][2][COLOR_NUM] boxColors;
 
   public static float getWidth(int n ,float s) {
     return n * s * LETTER_WIDTH;
@@ -37,7 +43,7 @@ public class LetterRender {
     glTranslatef(x, y, 0);
     glScalef(s, s, s);
     glRotatef(d, 0, 0, 1);
-    glCallList(displayListIdx + n + c * LETTER_NUM);
+    drawLetter(n, c);
     glPopMatrix();
   }
 
@@ -46,7 +52,7 @@ public class LetterRender {
     glTranslatef(x, y, 0);
     glScalef(s, -s, s);
     glRotatef(d, 0, 0, 1);
-    glCallList(displayListIdx + n + c * LETTER_NUM);
+    drawLetter(n, c);
     glPopMatrix();
   }
 
@@ -235,20 +241,57 @@ public class LetterRender {
     }
   }
 
-  private const int LETTER_SHADE = 3;
+  public static void drawLetter(int letter, int color) {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
 
-  private static void drawBox(float x, float y, float width, float height, float deg, int col) {
-    glPushMatrix();
-    glTranslatef(x - width / 2, y - height / 2, 0);
-    glRotatef(deg, 0, 0, 1);
-    glScalef(width, height, 0.3);
-    glCallList(Tumiki.displayListIdx +
-	       col * Tumiki.SHAPE_NUM +
-	       LETTER_SHADE * Tumiki.COLOR_NUM * Tumiki.SHAPE_NUM);
-    glPopMatrix();
+    foreach (i; 0..letterVertices[color][letter].length) {
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(letterVertices[color][letter][i].ptr));
+
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(boxColors[color][0].ptr));
+      glDrawArrays(GL_TRIANGLE_FAN, 0, boxNumVertices);
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(boxColors[color][1].ptr));
+      glDrawArrays(GL_LINE_LOOP, 0, boxNumVertices);
+    }
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
   }
 
-  private static void drawLetter(int idx, int c) {
+  private static void prepareBox(int idx, float x, float y, float width, float height, float deg, int col) {
+    GLfloat[3*boxNumVertices] boxVertices = [
+       width,  height, 0,
+      -width,  height, 0,
+      -width, -height, 0,
+       width, -height, 0
+    ];
+
+    if (deg != 0) {
+      // rotate box
+
+      const float cdeg = cos(deg * std.math.PI / 180);
+      const float sdeg = sin(deg * std.math.PI / 180);
+
+      foreach (i; 0..boxNumVertices) {
+        const float bx = boxVertices[3*i + 0];
+        const float by = boxVertices[3*i + 1];
+
+        boxVertices[3*i + 0] = cdeg * bx - sdeg * by;
+        boxVertices[3*i + 1] = sdeg * bx + cdeg * by;
+      }
+    }
+
+    // move box
+    foreach (i; 0..boxNumVertices) {
+      boxVertices[3*i + 0] += x - width / 2;
+      boxVertices[3*i + 1] += y - height / 2;
+    }
+
+    ++letterVertices[col][idx].length;
+    letterVertices[col][idx][letterVertices[col][idx].length - 1] = boxVertices;
+  }
+
+  private static void prepareLetter(int idx, int c) {
     float x, y, length, size, t;
     float deg;
     for (int i = 0;; i++) {
@@ -273,31 +316,32 @@ public class LetterRender {
       y = y;
       deg %= 180;
       deg += rand.nextSignedFloat(16);
-      drawBox(x, y, size, length, deg, c);
+      prepareBox(idx, x, y, size, length, deg, c);
       /*if (deg <= 45 || deg > 135)
-	drawBox(x, y, size, length);
+	prepareBox(idx, x, y, size, length);
       else
-      drawBox(x, y, length, size);*/
+      prepareBox(idx, x, y, length, size);*/
     }
   }
 
-  public static void createDisplayLists() {
+  public static void prepareLetters() {
     rand = new Rand();
     rand.setSeed(0);
-    displayListIdx = glGenLists(DISPLAY_LIST_NUM);
-    int di = displayListIdx;
-    for (int j = 0; j < COLOR_NUM; j++) {
-      for (int i = 0; i < LETTER_NUM; i++) {
-	glNewList(di, GL_COMPILE);
-	drawLetter(i, j);
-	glEndList();
-	di++;
+    foreach (j; 0..COLOR_NUM) {
+      foreach (i; 0..LETTER_NUM) {
+        prepareLetter(i, j);
       }
     }
-  }
 
-  public static void deleteDisplayLists() {
-    glDeleteLists(displayListIdx, DISPLAY_LIST_NUM);
+    foreach (k; 0..COLOR_NUM) {
+      GLfloat[4] currentColor;
+
+      Tumiki.setFrontColor(k, 3, currentColor);
+      boxColors[k][0] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      Tumiki.setColor(k, 1, currentColor);
+      boxColors[k][1] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+    }
   }
 
   private static float[5][16][] spData =

@@ -6,7 +6,11 @@
 module abagames.tf.fragment;
 
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.vector;
 private import abagames.util.rand;
 private import abagames.util.actor;
@@ -83,8 +87,7 @@ public class Fragment: Actor {
     glTranslatef(pos.x, pos.y, -1);
     glRotatef(deg, 0, 0, 1);
     glScalef(size.x, size.y, (size.x  + size.y) / 2);
-    glCallList(Tumiki.displayListIdx + shape + color * Tumiki.SHAPE_NUM +
-	       Tumiki.SHAPE_NUM * Tumiki.COLOR_NUM);
+    Tumiki.drawShape(shape, color, 1);
     glPopMatrix();
   }
 }

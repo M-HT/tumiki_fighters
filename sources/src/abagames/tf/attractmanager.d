@@ -7,7 +7,11 @@ module abagames.tf.attractmanager;
 
 private import std.string;
 private import std.conv;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import abagames.util.sdl.pad;
 private import abagames.tf.gamemanager;
 private import abagames.tf.prefmanager;
@@ -133,11 +137,11 @@ public class AttractManager {
 	if (tp < 0) {
 	  int ti = -tp - 1;
 	  glScalef(0.75, 0.75, 0.75);
-	  glCallList(Tumiki.displayListIdx + ti + c * Tumiki.SHAPE_NUM);
+	  Tumiki.drawShape(ti, c, 0);
 	} else if (tp > 0) {
 	  int li = tp + 10;
 	  glScalef(0.9, 0.9, 0.9);
-	  glCallList(LetterRender.displayListIdx + li + c * LetterRender.LETTER_NUM);
+	  LetterRender.drawLetter(li, c);
 	}
 	glPopMatrix();
 	tx++;

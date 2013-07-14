@@ -6,7 +6,11 @@
 module abagames.tf.bulletactor;
 
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import bulletml;
 private import abagames.util.actor;
 private import abagames.util.vector;
@@ -312,9 +316,7 @@ public class BulletActor: Actor {
     default:
       break;
     }
-    glCallList(Tumiki.displayListIdx + s +
-	       (BULLET_COLOR + bullet.color) * Tumiki.SHAPE_NUM +
-	       BULLET_SHADE * Tumiki.COLOR_NUM * Tumiki.SHAPE_NUM);
+    Tumiki.drawShape(s, BULLET_COLOR + bullet.color, BULLET_SHADE);
     glPopMatrix();
   }
 }

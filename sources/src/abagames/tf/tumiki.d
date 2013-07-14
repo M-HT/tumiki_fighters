@@ -6,7 +6,11 @@
 module abagames.tf.tumiki;
 
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+} else {
+  private import opengl;
+}
 private import bulletml;
 private import abagames.util.vector;
 private import abagames.util.bulletml.bullet;
@@ -24,7 +28,9 @@ public class Tumiki {
  public:
   static const int SHAPE_NUM = 10;
   static const int SHADE_NUM = 4;
-  static int displayListIdx;
+  static const int COLOR_NUM = 12;
+  static const int DAMAGED_COLOR = 6;
+  static const int WOUNDED_COLOR = 0;
   Vector ofs;
   Vector size, checkHitSize;
   int shape, color;
@@ -72,14 +78,12 @@ public class Tumiki {
     glPushMatrix();
     glTranslatef(-size.x * PROPELLER_OFFSET, 0, 0);
     glScalef(size.x, size.y, (size.x  + size.y) / 2);
-    glCallList(displayListIdx + PROPELLER_SHAPE +
-	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+    drawShape(PROPELLER_SHAPE, color, shade);
     glPopMatrix();
     glPushMatrix();
     glTranslatef(size.x * PROPELLER_OFFSET, 0, 0);
     glScalef(size.x, size.y, (size.x  + size.y) / 2);
-    glCallList(displayListIdx + PROPELLER_SHAPE +
-	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+    drawShape(PROPELLER_SHAPE, color, shade);
     glPopMatrix();
   }
 
@@ -91,14 +95,12 @@ public class Tumiki {
     glPushMatrix();
     glTranslatef(-size.x * PROPELLER_OFFSET, (size.x  + size.y) / 2, (size.x  + size.y) / 2);
     glScalef(size.x, size.y, (size.x  + size.y) / 2);
-    glCallList(displayListIdx + PROPELLER_SHAPE +
-	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+    drawShape(PROPELLER_SHAPE, color, shade);
     glPopMatrix();
     glPushMatrix();
     glTranslatef(size.x * PROPELLER_OFFSET, (size.x  + size.y) / 2, (size.x  + size.y) / 2);
     glScalef(size.x, size.y, (size.x  + size.y) / 2);
-    glCallList(displayListIdx + PROPELLER_SHAPE +
-	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+    drawShape(PROPELLER_SHAPE, color, shade);
     glPopMatrix();
   }
 
@@ -109,14 +111,12 @@ public class Tumiki {
     glPushMatrix();
     glTranslatef(-size.x * PROPELLER_OFFSET * sz, 0, 0);
     glScalef(size.x * sz, size.y * sz, (size.x  + size.y) / 2 * sz);
-    glCallList(displayListIdx + PROPELLER_SHAPE +
-	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+    drawShape(PROPELLER_SHAPE, color, shade);
     glPopMatrix();
     glPushMatrix();
     glTranslatef(size.x * PROPELLER_OFFSET * sz, 0, 0);
     glScalef(size.x * sz, size.y * sz, (size.x  + size.y) / 2 * sz);
-    glCallList(displayListIdx + PROPELLER_SHAPE +
-	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+    drawShape(PROPELLER_SHAPE, color, shade);
     glPopMatrix();
   }
 
@@ -129,15 +129,13 @@ public class Tumiki {
     glTranslatef(-size.x * PROPELLER_OFFSET * sz,
 		 (size.x  + size.y) / 2 * sz, (size.x  + size.y) / 2 * sz);
     glScalef(size.x * sz, size.y * sz, (size.x  + size.y) / 2 * sz);
-    glCallList(displayListIdx + PROPELLER_SHAPE +
-	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+    drawShape(PROPELLER_SHAPE, color, shade);
     glPopMatrix();
     glPushMatrix();
     glTranslatef(size.x * PROPELLER_OFFSET * sz,
 		 (size.x  + size.y) / 2 * sz, (size.x  + size.y) / 2 * sz);
     glScalef(size.x * sz, size.y * sz, (size.x  + size.y) / 2 * sz);
-    glCallList(displayListIdx + PROPELLER_SHAPE +
-	       color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+    drawShape(PROPELLER_SHAPE, color, shade);
     glPopMatrix();
   }
 
@@ -149,7 +147,7 @@ public class Tumiki {
     if (shape < PROPELLER_SHAPE) {
       glRotatef(rtod(deg), 0, 0, 1);
       glScalef(size.x, size.y, (size.x  + size.y) / 2);
-      glCallList(displayListIdx + shape + color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+      drawShape(shape, color, shade);
     } else if (shape == PROPELLER_SHAPE_FRONT) {
       drawPropellerFront(deg, shade);
     } else {
@@ -168,7 +166,7 @@ public class Tumiki {
     if (shape < PROPELLER_SHAPE) {
       glRotatef(rtod(deg), 0, 0, 1);
       glScalef(size.x * sz, size.y * sz, (size.x  + size.y) / 2 * sz);
-      glCallList(displayListIdx + shape + color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+      drawShape(shape, color, shade);
     } else if (shape == PROPELLER_SHAPE_FRONT) {
       drawPropellerFront(deg, shade, sz);
     } else {
@@ -187,14 +185,11 @@ public class Tumiki {
     if (shape < PROPELLER_SHAPE) {
       glScalef(size.x, size.y, (size.x  + size.y) / 2);
       if (damaged)
-	glCallList
-	  (displayListIdx + shape + DAMAGED_COLOR * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+	drawShape(shape, DAMAGED_COLOR, shade);
       else if (wounded)
-	glCallList
-	  (displayListIdx + shape + WOUNDED_COLOR * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+	drawShape(shape, WOUNDED_COLOR, shade);
       else
-	glCallList
-	  (displayListIdx + shape + color * SHAPE_NUM + shade * SHAPE_NUM * COLOR_NUM);
+	drawShape(shape, color, shade);
     } else if (shape == PROPELLER_SHAPE_FRONT) {
       drawPropellerFront(0, shade);
     } else {
@@ -218,10 +213,7 @@ public class Tumiki {
     return checkDistHit(p.x - px, p.y - py, ofs, size);
   }
 
-  public static const int COLOR_NUM = 12;
   private static const int DISPLAY_LIST_NUM = SHAPE_NUM * COLOR_NUM * SHADE_NUM;
-  public static const int DAMAGED_COLOR = 6;
-  public static const int WOUNDED_COLOR = 0;
   private static const float[3][COLOR_NUM] colorParams =
     [
      [0.9, 0.6, 0.6], [0.6, 0.9, 0.6], [0.6, 0.6, 0.9],
@@ -232,252 +224,577 @@ public class Tumiki {
     ];
   private static const float DEPTH = -2;
   private static const float LINE_PADDING = 0.03;
+  private static GLenum[][SHAPE_NUM][COLOR_NUM][SHADE_NUM] shapeDrawMode;
+  private static GLfloat[][][SHAPE_NUM][COLOR_NUM][SHADE_NUM] shapeVertices;
+  private static GLfloat[][][SHAPE_NUM][COLOR_NUM][SHADE_NUM] shapeColors;
 
-  private static void setFrontColor(int j, int i) {
+  public static void drawShape(int shape, int color, int shade) {
+    glEnableClientState(GL_VERTEX_ARRAY);
+    glEnableClientState(GL_COLOR_ARRAY);
+
+    foreach (i; 0..shapeDrawMode[shade][color][shape].length) {
+      glVertexPointer(3, GL_FLOAT, 0, cast(void *)(shapeVertices[shade][color][shape][i].ptr));
+      glColorPointer(4, GL_FLOAT, 0, cast(void *)(shapeColors[shade][color][shape][i].ptr));
+      glDrawArrays(shapeDrawMode[shade][color][shape][i], 0, cast(int)(shapeColors[shade][color][shape][i].length / 4));
+    }
+
+    glDisableClientState(GL_COLOR_ARRAY);
+    glDisableClientState(GL_VERTEX_ARRAY);
+  }
+
+  public static void setColor(int j, float m, ref GLfloat[4] color) {
+    color[0] = colorParams[j][0] * m * Screen.brightness;
+    color[1] = colorParams[j][1] * m * Screen.brightness;
+    color[2] = colorParams[j][2] * m * Screen.brightness;
+    color[3] = 1;
+  }
+
+  public static void setFrontColor(int j, int i, ref GLfloat[4] color) {
     switch (i) {
     case 1:
-      Screen.setColor
-	(colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8);
+      color[0] = colorParams[j][0] * 0.8 * Screen.brightness;
+      color[1] = colorParams[j][1] * 0.8 * Screen.brightness;
+      color[2] = colorParams[j][2] * 0.8 * Screen.brightness;
+      color[3] = 1;
       break;
     case 2:
-      Screen.setColor
-	(colorParams[j][0] * 0.5, colorParams[j][1] * 0.5, colorParams[j][2] * 0.5);
+      color[0] = colorParams[j][0] * 0.5 * Screen.brightness;
+      color[1] = colorParams[j][1] * 0.5 * Screen.brightness;
+      color[2] = colorParams[j][2] * 0.5 * Screen.brightness;
+      color[3] = 1;
       break;
     default:
-      Screen.setColor
-	(colorParams[j][0] * 0.9, colorParams[j][1] * 0.9, colorParams[j][2] * 0.9);
+      color[0] = colorParams[j][0] * 0.9 * Screen.brightness;
+      color[1] = colorParams[j][1] * 0.9 * Screen.brightness;
+      color[2] = colorParams[j][2] * 0.9 * Screen.brightness;
+      color[3] = 1;
       break;
     }
   }
 
-  private static void setSideColor(int j, int i) {
+  private static void setSideColor(int j, int i, ref GLfloat[4] color) {
     switch (i) {
     case 0:
-      Screen.setColor
-	(colorParams[j][0] * 0.7, colorParams[j][1] * 0.7, colorParams[j][2] * 0.7);
+      color[0] = colorParams[j][0] * 0.7 * Screen.brightness;
+      color[1] = colorParams[j][1] * 0.7 * Screen.brightness;
+      color[2] = colorParams[j][2] * 0.7 * Screen.brightness;
+      color[3] = 1;
       break;
     case 1:
-      Screen.setColor
-	(colorParams[j][0] * 0.6, colorParams[j][1] * 0.6, colorParams[j][2] * 0.6);
+      color[0] = colorParams[j][0] * 0.6 * Screen.brightness;
+      color[1] = colorParams[j][1] * 0.6 * Screen.brightness;
+      color[2] = colorParams[j][2] * 0.6 * Screen.brightness;
+      color[3] = 1;
       break;
     case 2:
-      Screen.setColor
-	(colorParams[j][0] * 0.4, colorParams[j][1] * 0.4, colorParams[j][2] * 0.4);
+      color[0] = colorParams[j][0] * 0.4 * Screen.brightness;
+      color[1] = colorParams[j][1] * 0.4 * Screen.brightness;
+      color[2] = colorParams[j][2] * 0.4 * Screen.brightness;
+      color[3] = 1;
       break;
     default:
       break;
     }
   }
 
-  public static void createDisplayLists() {
-    displayListIdx = glGenLists(DISPLAY_LIST_NUM);
-    int di = displayListIdx;
-    for (int i = 0; i < SHADE_NUM; i++) {
-      for (int j = 0; j < COLOR_NUM; j++) {
-	glNewList(di, GL_COMPILE);
-	setFrontColor(j, i);
-	glBegin(GL_QUADS);
-	glVertex3f(1, 1, 0);
-	glVertex3f(-1, 1, 0);
-	glVertex3f(-1, -1, 0);
-	glVertex3f(1, -1, 0);
-	if (i < 3) {
-	  setSideColor(j, i);
-	  glVertex3f(-1, 1, 0);
-	  glVertex3f(1, 1, 0);
-	  glVertex3f(1, 1, DEPTH);
-	  glVertex3f(-1, 1, DEPTH);
-	  glVertex3f(-1, -1, 0);
-	  glVertex3f(-1, 1, 0);
-	  glVertex3f(-1, 1, DEPTH);
-	  glVertex3f(-1, -1, DEPTH);
-	  glVertex3f(1, -1, 0);
-	  glVertex3f(-1, -1, 0);
-	  glVertex3f(-1, -1, DEPTH);
-	  glVertex3f(1, -1, DEPTH);
-	  glVertex3f(1, 1, 0);
-	  glVertex3f(1, -1, 0);
-	  glVertex3f(1, -1, DEPTH);
-	  glVertex3f(1, 1, DEPTH);
-	}
-	glEnd();
-	if (i == 0 || i == 3) {
-	  Screen.setColor
-	    (colorParams[j][0], colorParams[j][1], colorParams[j][2]);
-	  glBegin(GL_LINE_STRIP);
-	  if (i == 0) {
-	    glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
-	    glVertex3f(-1 - LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
-	    glVertex3f(-1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING);
-	    glVertex3f(1 + LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING);
-	    glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
-	  } else {
-	    glVertex3f(1, 1, 0);
-	    glVertex3f(-1, 1, 0);
-	    glVertex3f(-1, -1, 0);
-	    glVertex3f(1, -1, 0);
-	    glVertex3f(1, 1, 0);
-	  }
-	  glEnd();
-	  if (i == 0) {
-	    Screen.setColor
-	      (colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8);
-	    glBegin(GL_LINES);
-	    glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, DEPTH);
-	    glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
-	    glVertex3f(-1 - LINE_PADDING, 1 + LINE_PADDING, DEPTH);
-	    glVertex3f(-1 - LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
-	    glVertex3f(-1 - LINE_PADDING, -1 - LINE_PADDING, DEPTH);
-	    glVertex3f(-1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING);
-	    glVertex3f(1 + LINE_PADDING, -1 - LINE_PADDING, DEPTH);
-	    glVertex3f(1 + LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING);
-	    glEnd();
-	  }
-	}
-	glEndList();
-	di++;
-	for (int k = 0; k < 4; k++) {
-	  glNewList(di, GL_COMPILE);
-	  glRotatef(-90 * k, 0, 0, 1);
-	  setFrontColor(j, i);
-	  glBegin(GL_TRIANGLE_STRIP);
-	  glVertex3f(1, 1, 0);
-	  glVertex3f(-1, 1, 0);
-	  glVertex3f(-1, -1, 0);
-	  glEnd();
-	  if (i < 3) {
-	    setSideColor(j, i);
-	    glBegin(GL_QUADS);
-	    glVertex3f(-1, 1, 0);
-	    glVertex3f(1, 1, 0);
-	    glVertex3f(1, 1, DEPTH);
-	    glVertex3f(-1, 1, DEPTH);
-	    glVertex3f(-1, -1, 0);
-	    glVertex3f(-1, 1, 0);
-	    glVertex3f(-1, 1, DEPTH);
-	    glVertex3f(-1, -1, DEPTH);
-	    glVertex3f(1, 1, 0);
-	    glVertex3f(-1, -1, 0);
-	    glVertex3f(-1, -1, DEPTH);
-	    glVertex3f(1, 1, DEPTH);
-	    glEnd();
-	  }
-	  if (i == 0 || i == 3) {
-	    Screen.setColor
-	      (colorParams[j][0], colorParams[j][1], colorParams[j][2]);
-	    glBegin(GL_LINE_STRIP);
-	    glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
-	    glVertex3f(-1 - LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
-	    glVertex3f(-1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING);
-	    glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
-	    glEnd();
-	    if (i == 0) {
-	      Screen.setColor
-		(colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8);
-	      glBegin(GL_LINES);
-	      glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, DEPTH);
-	      glVertex3f(1 + LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
-	      glVertex3f(-1 - LINE_PADDING, 1 + LINE_PADDING, DEPTH);
-	      glVertex3f(-1 - LINE_PADDING, 1 + LINE_PADDING, LINE_PADDING);
-	      glVertex3f(-1 - LINE_PADDING, -1 - LINE_PADDING, DEPTH);
-	      glVertex3f(-1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING);
-	      glEnd();
-	    }
-	  }
-	  glEndList();
-	  di++;
-	}
-	for (int k = 0; k < 4; k++) {
-	  glNewList(di, GL_COMPILE);
-	  glRotatef(-90 * k, 0, 0, 1);
-	  setFrontColor(j, i);
-	  glBegin(GL_TRIANGLE_STRIP);
-	  glVertex3f(1, -1, 0);
-	  glVertex3f(0, 1, 0);
-	  glVertex3f(-1, -1, 0);
-	  glEnd();
-	  if (i < 3) {
-	    setSideColor(j, i);
-	    glBegin(GL_QUADS);
-	    glVertex3f(0, 1, 0);
-	    glVertex3f(1, -1, 0);
-	    glVertex3f(1, -1, DEPTH);
-	    glVertex3f(0, 1, DEPTH);
-	    glVertex3f(-1, -1, 0);
-	    glVertex3f(0, 1, 0);
-	    glVertex3f(0, 1, DEPTH);
-	    glVertex3f(-1, -1, DEPTH);
-	    glVertex3f(1, -1, 0);
-	    glVertex3f(-1, -1, 0);
-	    glVertex3f(-1, -1, DEPTH);
-	    glVertex3f(1, -1, DEPTH);
-	    glEnd();
-	  }
-	  if (i == 0 || i == 3) {
-	    Screen.setColor
-	      (colorParams[j][0], colorParams[j][1], colorParams[j][2]);
-	    glBegin(GL_LINE_STRIP);
-	    glVertex3f(1 + LINE_PADDING, -1 + LINE_PADDING, LINE_PADDING);
-	    glVertex3f(0, 1 + LINE_PADDING, LINE_PADDING);
-	    glVertex3f(-1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING);
-	    glVertex3f(1 + LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING);
-	    glEnd();
-	    if (i == 0) {
-	      Screen.setColor
-		(colorParams[j][0] * 0.8, colorParams[j][1] * 0.8, colorParams[j][2] * 0.8);
-	      glBegin(GL_LINES);
-	      glVertex3f(1 + LINE_PADDING, -1 - LINE_PADDING, DEPTH);
-	      glVertex3f(1 + LINE_PADDING, -1 + LINE_PADDING, LINE_PADDING);
-	      glVertex3f(0, 1 + LINE_PADDING, DEPTH);
-	      glVertex3f(0, 1 + LINE_PADDING, LINE_PADDING);
-	      glVertex3f(-1 - LINE_PADDING, -1 - LINE_PADDING, DEPTH);
-	      glVertex3f(-1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING);
-	      glEnd();
-	    }
-	  }
-	  glEndList();
-	  di++;
-	}
-	glNewList(di, GL_COMPILE);
-	setFrontColor(j, i);
-	glBegin(GL_QUADS);
-	glVertex3f(1, 1, 0);
-	glVertex3f(-1, 1, 0);
-	glVertex3f(-1, -1, 0);
-	glVertex3f(1, -1, 0);
-	glVertex3f(1, 1, DEPTH);
-	glVertex3f(1, -1, DEPTH);
-	glVertex3f(-1, -1, DEPTH);
-	glVertex3f(-1, 1, DEPTH);
-	if (i < 3) {
-	  setSideColor(j, i);
-	  glVertex3f(-1, 1, 0);
-	  glVertex3f(1, 1, 0);
-	  glVertex3f(1, 1, DEPTH);
-	  glVertex3f(-1, 1, DEPTH);
-	  glVertex3f(-1, -1, 0);
-	  glVertex3f(-1, 1, 0);
-	  glVertex3f(-1, 1, DEPTH);
-	  glVertex3f(-1, -1, DEPTH);
-	  glVertex3f(1, -1, 0);
-	  glVertex3f(-1, -1, 0);
-	  glVertex3f(-1, -1, DEPTH);
-	  glVertex3f(1, -1, DEPTH);
-	  glVertex3f(1, 1, 0);
-	  glVertex3f(1, -1, 0);
-	  glVertex3f(1, -1, DEPTH);
-	  glVertex3f(1, 1, DEPTH);
-	}
-	glEnd();
-	glEndList();
-	di++;
+  private static void prepareShapes1(int i, int j, int shape) {
+    GLfloat[4] currentColor;
+    int currentIdx;
+
+    if (i < 3) {
+      shapeDrawMode[i][j][shape].length = 1 + 4;
+      shapeVertices[i][j][shape].length = 1 + 4;
+      shapeColors[i][j][shape].length = 1 + 4;
+    } else {
+      shapeDrawMode[i][j][shape].length = 1;
+      shapeVertices[i][j][shape].length = 1;
+      shapeColors[i][j][shape].length = 1;
+    }
+
+    setFrontColor(j, i, currentColor);
+
+    currentIdx = 0;
+    shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+    shapeVertices[i][j][shape][currentIdx] = [
+       1,  1, 0,
+      -1,  1, 0,
+      -1, -1, 0,
+       1, -1, 0
+    ];
+    shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+    if (i < 3) {
+      setSideColor(j, i, currentColor);
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+        -1, 1, 0,
+         1, 1, 0,
+         1, 1, DEPTH,
+        -1, 1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+        -1, -1, 0,
+        -1,  1, 0,
+        -1,  1, DEPTH,
+        -1, -1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+         1, -1, 0,
+        -1, -1, 0,
+        -1, -1, DEPTH,
+         1, -1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+        1,  1, 0,
+        1, -1, 0,
+        1, -1, DEPTH,
+        1,  1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+    }
+
+    if (i == 0 || i == 3) {
+      setColor(j, 1, currentColor);
+
+      ++shapeDrawMode[i][j][shape].length;
+      ++shapeVertices[i][j][shape].length;
+      ++shapeColors[i][j][shape].length;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_LINE_STRIP;
+      if (i == 0) {
+        shapeVertices[i][j][shape][currentIdx] = [
+           1 + LINE_PADDING,  1 + LINE_PADDING, LINE_PADDING,
+          -1 - LINE_PADDING,  1 + LINE_PADDING, LINE_PADDING,
+          -1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING,
+           1 + LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING,
+           1 + LINE_PADDING,  1 + LINE_PADDING, LINE_PADDING
+        ];
+      } else {
+        shapeVertices[i][j][shape][currentIdx] = [
+           1,  1, 0,
+          -1,  1, 0,
+          -1, -1, 0,
+           1, -1, 0,
+           1,  1, 0
+        ];
+      }
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor ~ currentColor;
+    }
+
+    if (i == 0) {
+      setColor(j, 0.8, currentColor);
+
+      ++shapeDrawMode[i][j][shape].length;
+      ++shapeVertices[i][j][shape].length;
+      ++shapeColors[i][j][shape].length;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_LINES;
+      shapeVertices[i][j][shape][currentIdx] = [
+         1 + LINE_PADDING,  1 + LINE_PADDING, DEPTH,
+         1 + LINE_PADDING,  1 + LINE_PADDING, LINE_PADDING,
+        -1 - LINE_PADDING,  1 + LINE_PADDING, DEPTH,
+        -1 - LINE_PADDING,  1 + LINE_PADDING, LINE_PADDING,
+        -1 - LINE_PADDING, -1 - LINE_PADDING, DEPTH,
+        -1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING,
+         1 + LINE_PADDING, -1 - LINE_PADDING, DEPTH,
+         1 + LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor
+                                             ~ currentColor ~ currentColor
+                                             ~ currentColor ~ currentColor
+                                             ~ currentColor ~ currentColor;
+    }
+  }
+
+  private static void prepareShapes2(int i, int j, int k, int shape) {
+    GLfloat[4] currentColor;
+    int currentIdx;
+
+    if (i < 3) {
+      shapeDrawMode[i][j][shape].length = 1 + 3;
+      shapeVertices[i][j][shape].length = 1 + 3;
+      shapeColors[i][j][shape].length = 1 + 3;
+    } else {
+      shapeDrawMode[i][j][shape].length = 1;
+      shapeVertices[i][j][shape].length = 1;
+      shapeColors[i][j][shape].length = 1;
+    }
+
+    setFrontColor(j, i, currentColor);
+
+    currentIdx = 0;
+    shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_STRIP;
+    shapeVertices[i][j][shape][currentIdx] = [
+       1,  1, 0,
+      -1,  1, 0,
+      -1, -1, 0
+    ];
+    shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor;
+
+    if (i < 3) {
+      setSideColor(j, i, currentColor);
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+        -1, 1, 0,
+         1, 1, 0,
+         1, 1, DEPTH,
+        -1, 1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+        -1, -1, 0,
+        -1,  1, 0,
+        -1,  1, DEPTH,
+        -1, -1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+         1,  1, 0,
+        -1, -1, 0,
+        -1, -1, DEPTH,
+         1,  1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+    }
+
+    if (i == 0 || i == 3) {
+      setColor(j, 1, currentColor);
+
+      ++shapeDrawMode[i][j][shape].length;
+      ++shapeVertices[i][j][shape].length;
+      ++shapeColors[i][j][shape].length;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_LINE_STRIP;
+      shapeVertices[i][j][shape][currentIdx] = [
+         1 + LINE_PADDING,  1 + LINE_PADDING, LINE_PADDING,
+        -1 - LINE_PADDING,  1 + LINE_PADDING, LINE_PADDING,
+        -1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING,
+         1 + LINE_PADDING,  1 + LINE_PADDING, LINE_PADDING
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+    }
+
+    if (i == 0) {
+      setColor(j, 0.8, currentColor);
+
+      ++shapeDrawMode[i][j][shape].length;
+      ++shapeVertices[i][j][shape].length;
+      ++shapeColors[i][j][shape].length;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_LINES;
+      shapeVertices[i][j][shape][currentIdx] = [
+         1 + LINE_PADDING,  1 + LINE_PADDING, DEPTH,
+         1 + LINE_PADDING,  1 + LINE_PADDING, LINE_PADDING,
+        -1 - LINE_PADDING,  1 + LINE_PADDING, DEPTH,
+        -1 - LINE_PADDING,  1 + LINE_PADDING, LINE_PADDING,
+        -1 - LINE_PADDING, -1 - LINE_PADDING, DEPTH,
+        -1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor
+                                             ~ currentColor ~ currentColor
+                                             ~ currentColor ~ currentColor;
+    }
+
+    if (k != 0) {
+      float a, b, c, d;
+      if (k == 1) {
+        // glRotatef(-90, 0, 0, 1);
+        a = 0;
+        b = 1;
+        c = -1;
+        d = 0;
+      } else if (k == 2) {
+        // glRotatef(-180, 0, 0, 1);
+        a = -1;
+        b = 0;
+        c = 0;
+        d = -1;
+      } else if (k == 3) {
+        // glRotatef(-270, 0, 0, 1);
+        a = 0;
+        b = -1;
+        c = 1;
+        d = 0;
+      }
+
+      foreach (m; 0..shapeVertices[i][j][shape].length) {
+        const int numVertices = cast(int)(shapeVertices[i][j][shape][m].length / 3);
+        foreach (n; 0..numVertices) {
+          const float x = shapeVertices[i][j][shape][m][3*n + 0];
+          const float y = shapeVertices[i][j][shape][m][3*n + 1];
+
+          shapeVertices[i][j][shape][m][3*n + 0] = a*x + b*y;
+          shapeVertices[i][j][shape][m][3*n + 1] = c*x + d*y;
+        }
       }
     }
   }
 
-  public static void deleteDisplayLists() {
-    glDeleteLists(displayListIdx, DISPLAY_LIST_NUM);
+  private static void prepareShapes3(int i, int j, int k, int shape) {
+    GLfloat[4] currentColor;
+    int currentIdx;
+
+    if (i < 3) {
+      shapeDrawMode[i][j][shape].length = 1 + 3;
+      shapeVertices[i][j][shape].length = 1 + 3;
+      shapeColors[i][j][shape].length = 1 + 3;
+    } else {
+      shapeDrawMode[i][j][shape].length = 1;
+      shapeVertices[i][j][shape].length = 1;
+      shapeColors[i][j][shape].length = 1;
+    }
+
+    setFrontColor(j, i, currentColor);
+
+    currentIdx = 0;
+    shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_STRIP;
+    shapeVertices[i][j][shape][currentIdx] = [
+       1, -1, 0,
+       0,  1, 0,
+      -1, -1, 0
+    ];
+    shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor;
+
+    if (i < 3) {
+      setSideColor(j, i, currentColor);
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+         0,  1, 0,
+         1, -1, 0,
+         1, -1, DEPTH,
+         0,  1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+        -1, -1, 0,
+         0,  1, 0,
+         0,  1, DEPTH,
+        -1, -1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+         1, -1, 0,
+        -1, -1, 0,
+        -1, -1, DEPTH,
+         1, -1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+    }
+
+    if (i == 0 || i == 3) {
+      setColor(j, 1, currentColor);
+
+      ++shapeDrawMode[i][j][shape].length;
+      ++shapeVertices[i][j][shape].length;
+      ++shapeColors[i][j][shape].length;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_LINE_STRIP;
+      shapeVertices[i][j][shape][currentIdx] = [
+         1 + LINE_PADDING, -1 + LINE_PADDING, LINE_PADDING,
+         0               ,  1 + LINE_PADDING, LINE_PADDING,
+        -1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING,
+         1 + LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+    }
+
+    if (i == 0) {
+      setColor(j, 0.8, currentColor);
+
+      ++shapeDrawMode[i][j][shape].length;
+      ++shapeVertices[i][j][shape].length;
+      ++shapeColors[i][j][shape].length;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_LINES;
+      shapeVertices[i][j][shape][currentIdx] = [
+         1 + LINE_PADDING, -1 - LINE_PADDING, DEPTH,
+         1 + LINE_PADDING, -1 + LINE_PADDING, LINE_PADDING,
+         0               ,  1 + LINE_PADDING, DEPTH,
+         0               ,  1 + LINE_PADDING, LINE_PADDING,
+        -1 - LINE_PADDING, -1 - LINE_PADDING, DEPTH,
+        -1 - LINE_PADDING, -1 - LINE_PADDING, LINE_PADDING
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor
+                                             ~ currentColor ~ currentColor
+                                             ~ currentColor ~ currentColor;
+    }
+
+    if (k != 0) {
+      float a, b, c, d;
+      if (k == 1) {
+        // glRotatef(-90, 0, 0, 1);
+        a = 0;
+        b = 1;
+        c = -1;
+        d = 0;
+      } else if (k == 2) {
+        // glRotatef(-180, 0, 0, 1);
+        a = -1;
+        b = 0;
+        c = 0;
+        d = -1;
+      } else if (k == 3) {
+        // glRotatef(-270, 0, 0, 1);
+        a = 0;
+        b = -1;
+        c = 1;
+        d = 0;
+      }
+
+      foreach (m; 0..shapeVertices[i][j][shape].length) {
+        const int numVertices = cast(int)(shapeVertices[i][j][shape][m].length / 3);
+        foreach (n; 0..numVertices) {
+          const float x = shapeVertices[i][j][shape][m][3*n + 0];
+          const float y = shapeVertices[i][j][shape][m][3*n + 1];
+
+          shapeVertices[i][j][shape][m][3*n + 0] = a*x + b*y;
+          shapeVertices[i][j][shape][m][3*n + 1] = c*x + d*y;
+        }
+      }
+    }
   }
+
+  private static void prepareShapes4(int i, int j, int shape) {
+    GLfloat[4] currentColor;
+    int currentIdx;
+
+    if (i < 3) {
+      shapeDrawMode[i][j][shape].length = 2 + 4;
+      shapeVertices[i][j][shape].length = 2 + 4;
+      shapeColors[i][j][shape].length = 2 + 4;
+    } else {
+      shapeDrawMode[i][j][shape].length = 2;
+      shapeVertices[i][j][shape].length = 2;
+      shapeColors[i][j][shape].length = 2;
+    }
+
+    setFrontColor(j, i, currentColor);
+
+    currentIdx = 0;
+    shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+    shapeVertices[i][j][shape][currentIdx] = [
+       1,  1, 0,
+      -1,  1, 0,
+      -1, -1, 0,
+       1, -1, 0
+    ];
+    shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+    currentIdx++;
+    shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+    shapeVertices[i][j][shape][currentIdx] = [
+       1,  1, DEPTH,
+       1, -1, DEPTH,
+      -1, -1, DEPTH,
+      -1,  1, DEPTH
+    ];
+    shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+    if (i < 3) {
+      setSideColor(j, i, currentColor);
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+        -1, 1, 0,
+         1, 1, 0,
+         1, 1, DEPTH,
+        -1, 1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+        -1, -1, 0,
+        -1,  1, 0,
+        -1,  1, DEPTH,
+        -1, -1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+         1, -1, 0,
+        -1, -1, 0,
+        -1, -1, DEPTH,
+         1, -1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+
+      currentIdx++;
+      shapeDrawMode[i][j][shape][currentIdx] = GL_TRIANGLE_FAN;
+      shapeVertices[i][j][shape][currentIdx] = [
+        1,  1, 0,
+        1, -1, 0,
+        1, -1, DEPTH,
+        1,  1, DEPTH
+      ];
+      shapeColors[i][j][shape][currentIdx] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+    }
+  }
+
+  public static void prepareShapes() {
+    foreach (i; 0..SHADE_NUM) {
+      foreach (j; 0..COLOR_NUM) {
+        int shape = 0;
+
+        prepareShapes1(i, j, shape);
+        shape++;
+
+        foreach (k; 0..4) {
+          prepareShapes2(i, j, k, shape);
+          shape++;
+        }
+
+        foreach (k; 0..4) {
+          prepareShapes3(i, j, k, shape);
+          shape++;
+        }
+
+        prepareShapes4(i, j, shape);
+        shape++;
+      }
+    }
+  }
+
 }
 
 /**

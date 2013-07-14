@@ -6,7 +6,12 @@
 module abagames.tf.playscreen;
 
 private import std.math;
-private import opengl;
+version (USE_GLES) {
+  private import opengles;
+  alias glOrthof glOrtho;
+} else {
+  private import opengl;
+}
 private import abagames.util.sdl.screen3d;
 
 /**
