@@ -27,6 +27,8 @@ public class Screen3D: Screen {
   static float brightness = 1;
   static int width = 640;
   static int height = 480;
+  static int startx = 0;
+  static int starty = 0;
   static bool windowMode = false;
   static float nearPlane = 0.1;
   static float farPlane = 1000;
@@ -54,7 +56,17 @@ public class Screen3D: Screen {
     } else {
       videoFlags |= SDL_FULLSCREEN;
     }
-    if (SDL_SetVideoMode(width, height, 0, videoFlags) == null) {
+    int physical_width = width;
+    int physical_height = height;
+    version (PANDORA) {
+      if (!windowMode) {
+        physical_width = 800;
+        physical_height = 480;
+        startx = (800 - width) / 2;
+        starty = (480 - height) / 2;
+      }
+    }
+    if (SDL_SetVideoMode(physical_width, physical_height, 0, videoFlags) == null) {
       throw new SDLInitFailedException
 	("Unable to create SDL screen: " ~ to!string(SDL_GetError()));
     }
@@ -64,7 +76,7 @@ public class Screen3D: Screen {
 	  "Unable to open EGL context");
       }
     }
-    glViewport(0, 0, width, height);
+    glViewport(startx, starty, width, height);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     resized(width, height);
     SDL_ShowCursor(SDL_DISABLE);
@@ -74,14 +86,19 @@ public class Screen3D: Screen {
   // Reset viewport when the screen is resized.
 
   private void screenResized() {
-    glViewport(0, 0, width, height);
+    glViewport(startx, starty, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     //gluPerspective(45.0f, cast(GLfloat) width / cast(GLfloat) height, nearPlane, farPlane);
-    glFrustum(-nearPlane,
+    /*glFrustum(-nearPlane,
 	      nearPlane,
 	      -nearPlane * cast(GLfloat)height / cast(GLfloat)width,
 	      nearPlane * cast(GLfloat)height / cast(GLfloat)width,
+	      0.1f, farPlane);*/
+    glFrustum(-nearPlane,
+	      nearPlane,
+	      -nearPlane * cast(GLfloat)480 / cast(GLfloat)640,
+	      nearPlane * cast(GLfloat)480 / cast(GLfloat)640,
 	      0.1f, farPlane);
     glMatrixMode(GL_MODELVIEW);
   }
