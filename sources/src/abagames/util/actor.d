@@ -29,5 +29,6 @@ public class Actor {
 /**
  * Pass initial parameters to the actor.
  */
-public interface ActorInitializer {
+//public interface ActorInitializer {
+public abstract class ActorInitializer {
 }

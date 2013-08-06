@@ -33,7 +33,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
     }
   }
 
-  public void load() {
+  public override void load() {
     scope File fd;
     try {
       int read_data[1];
@@ -50,7 +50,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
     }
   }
 
-  public void save() {
+  public override void save() {
     scope File fd;
     try {
       fd.open(PREF_FILE, "wb");

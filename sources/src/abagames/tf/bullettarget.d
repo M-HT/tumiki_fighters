@@ -10,7 +10,8 @@ private import abagames.util.vector;
 /**
  * Target that is aimed by bullets.
  */
-public interface BulletTarget {
+//public interface BulletTarget {
+public abstract class BulletTarget {
  public:
   Vector getTargetPos();
 }
@@ -24,7 +25,7 @@ public class VirtualBulletTarget: BulletTarget {
     pos = new Vector;
   }
 
-  public Vector getTargetPos() {
+  public override Vector getTargetPos() {
     return pos;
   }
 }

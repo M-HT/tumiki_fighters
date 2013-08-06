@@ -38,7 +38,7 @@ public class Screen3D: Screen {
   protected abstract void init();
   protected abstract void close();
 
-  public void initSDL() {
+  public override void initSDL() {
     // Initialize SDL.
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
       throw new SDLInitFailedException(
@@ -108,7 +108,7 @@ public class Screen3D: Screen {
     screenResized();
   }
 
-  public void closeSDL() {
+  public override void closeSDL() {
     close();
     version (USE_GLES) {
       EGL_Close();
@@ -116,7 +116,7 @@ public class Screen3D: Screen {
     SDL_ShowCursor(SDL_ENABLE);
   }
 
-  public void flip() {
+  public override void flip() {
     handleError();
     version (USE_GLES) {
       EGL_SwapBuffers();
@@ -125,7 +125,7 @@ public class Screen3D: Screen {
     }
   }
 
-  public void clear() {
+  public override void clear() {
     glClear(GL_COLOR_BUFFER_BIT);
   }
 

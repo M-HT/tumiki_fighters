@@ -5,6 +5,9 @@
  */
 module abagames.tf.letterrender;
 
+version (PANDORA) {
+  private import std.conv;
+}
 private import std.math;
 version (USE_GLES) {
   private import opengles;
@@ -341,6 +344,11 @@ public class LetterRender {
 
       Tumiki.setColor(k, 1, currentColor);
       boxColors[k][1] = currentColor ~ currentColor ~ currentColor ~ currentColor;
+    }
+
+    version (PANDORA) {
+      // hack: for some reason, without this (somewhere in this file), wrong colors are used
+      string hack_str = to!string(boxColors.ptr);
     }
   }
 

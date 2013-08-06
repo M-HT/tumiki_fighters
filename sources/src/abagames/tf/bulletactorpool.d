@@ -22,7 +22,8 @@ private import abagames.tf.stuckenemy;
 /**
  * Bullet actor pool that works as the BulletsManager.
  */
-public class BulletActorPool: ActorPool, BulletsManager {
+//public class BulletActorPool: ActorPool, BulletsManager {
+public class BulletActorPool: BulletsManager {
  private:
   int cnt;
 
@@ -44,7 +45,7 @@ public class BulletActorPool: ActorPool, BulletsManager {
       (cast(BulletActor) a).setStageManager(stageManager);
   }
 
-  public void addBullet(float deg, float speed) {
+  public override void addBullet(float deg, float speed) {
     BulletActor ba = cast(BulletActor) getInstance();
     if (!ba)
       return;
@@ -68,7 +69,7 @@ public class BulletActorPool: ActorPool, BulletsManager {
     }
   }
 
-  public void addBullet(BulletMLState *state, float deg, float speed) {
+  public override void addBullet(BulletMLState *state, float deg, float speed) {
     BulletActor ba = cast(BulletActor) getInstance();
     if (!ba)
       return;
@@ -142,11 +143,11 @@ public class BulletActorPool: ActorPool, BulletsManager {
       }
   }
 
-  public int getTurn() {
+  public override int getTurn() {
     return cnt;
   }
 
-  public void killMe(Bullet bullet) {
+  public override void killMe(Bullet bullet) {
     assert((cast(BulletActor) actor[bullet.id]).bullet.id == bullet.id);
     (cast(BulletActor) actor[bullet.id]).remove();
   }

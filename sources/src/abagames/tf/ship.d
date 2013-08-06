@@ -332,7 +332,7 @@ public class Ship: BulletTarget {
     }
   }
 
-  public Vector getTargetPos() {
+  public override Vector getTargetPos() {
     return pos;
   }
 

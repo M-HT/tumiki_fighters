@@ -10,6 +10,7 @@ private import SDL;
 /**
  * Input device interface.
  */
-public interface Input {
+//public interface Input {
+public abstract class Input {
   public void handleEvent(SDL_Event *event);
 }

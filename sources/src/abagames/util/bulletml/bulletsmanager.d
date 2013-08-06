@@ -7,14 +7,20 @@ module abagames.util.bulletml.bulletsmanager;
 
 private import bulletml;
 private import abagames.util.bulletml.bullet;
+private import abagames.util.actor;
+private import abagames.util.actorpool;
 
 /**
  * Interface for bullet's instances manager.
  */
-public interface BulletsManager {
-  public void addBullet(float deg, float speed);
-  public void addBullet(BulletMLState *state, float deg, float speed);
-  public int getTurn();
-  public void killMe(Bullet bullet);
+//public interface BulletsManager {
+public class BulletsManager: ActorPool {
+  public this(int n, Actor act, ActorInitializer ini) {
+    super(n, act, ini);
+  }
+  public abstract void addBullet(float deg, float speed);
+  public abstract void addBullet(BulletMLState *state, float deg, float speed);
+  public abstract int getTurn();
+  public abstract void killMe(Bullet bullet);
 }
 

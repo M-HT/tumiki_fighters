@@ -5,6 +5,9 @@
  */
 module abagames.tf.tumiki;
 
+version (PANDORA) {
+  private import std.conv;
+}
 private import std.math;
 version (USE_GLES) {
   private import opengles;
@@ -792,6 +795,11 @@ public class Tumiki {
         prepareShapes4(i, j, shape);
         shape++;
       }
+    }
+
+    version (PANDORA) {
+      // hack: for some reason, without this (somewhere in this file), the glDrawArrays function segfaults when bullet hits an enemy
+      string hack_str = to!string(shapeDrawMode.ptr);
     }
   }
 
