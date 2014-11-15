@@ -14,6 +14,10 @@ version (USE_GLES) {
 }
 private import SDL;
 private import bulletml;
+version (PANDORA) {
+    import std.conv;
+    import std.process;
+}
 private import abagames.util.rand;
 private import abagames.util.actorpool;
 private import abagames.util.vector;
@@ -251,6 +255,10 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
     cnt = 0;
     prefManager.setHiScore(score, stage);
     Music.fadeMusic();
+
+    version (PANDORA) {
+        system(escapeShellCommand("fusilli", "--cache", "push", "tumiki_fighters", to!string(score), "0") ~ " >/dev/null 2>&1");
+    }
   }
 
   private void startPause() {
