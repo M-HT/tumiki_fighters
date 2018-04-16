@@ -235,7 +235,7 @@ public class LetterRender {
     }
   }
 
-  private const int LETTER_SHADE = 3;
+  private static const int LETTER_SHADE = 3;
 
   private static void drawBox(float x, float y, float width, float height, float deg, int col) {
     glPushMatrix();

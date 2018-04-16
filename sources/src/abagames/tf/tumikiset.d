@@ -78,7 +78,7 @@ public class TumikiSet {
   // ],
   private this(char[][] data) {
     sizeXm = sizeYm = float.max;
-    sizeXp = sizeYp = float.min;
+    sizeXp = sizeYp = float.min_normal;
     StringIterator si = new StringIterator(data);
     float sizeRatio = to!float(si.next);
     score = to!int(si.next);

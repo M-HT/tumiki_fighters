@@ -71,7 +71,7 @@ public class EnemySpec {
       parts ~= tp;
     }
     sizeXm = sizeYm = float.max;
-    sizeXp = sizeYp = float.min;
+    sizeXp = sizeYp = float.min_normal;
     foreach (EnemyPartSpec eps; parts) {
       if (sizeXp < eps.ofs.x + eps.tumikiSet.sizeXp)
 	sizeXp = eps.ofs.x + eps.tumikiSet.sizeXp;

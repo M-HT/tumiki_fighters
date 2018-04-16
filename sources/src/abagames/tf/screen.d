@@ -3,7 +3,7 @@
  *
  * Copyright 2004 Kenta Cho. All rights reserved.
  */
-module abagames.tf.playscreen;
+module abagames.tf.screen;
 
 private import std.math;
 private import opengl;

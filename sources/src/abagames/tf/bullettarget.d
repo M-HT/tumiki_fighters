@@ -3,7 +3,7 @@
  *
  * Copyright 2004 Kenta Cho. All rights reserved.
  */
-module abagames.tf.bullettaget;
+module abagames.tf.bullettarget;
 
 private import abagames.util.vector;
 
