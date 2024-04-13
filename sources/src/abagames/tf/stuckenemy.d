@@ -217,11 +217,12 @@ public class StuckEnemy: Actor {
     cnt++;
     int mp = 1;
     int sen = SoundManager.Se.STUCK_BONUS;
-    if (manager.mode == GameManager.Mode.EXTRA)
+    if (manager.mode == GameManager.Mode.EXTRA) {
       if (stuckEnemies.pullInRatio >= 1)
 	mp = 5;
       else
 	sen = SoundManager.Se.STUCK_BONUS_PUSHIN;
+    }
     if (tumikiSet.fireScoreInterval > 0 &&
 	(cnt % tumikiSet.fireScoreInterval) == 0 &&
 	!field.checkHit(pos)) {

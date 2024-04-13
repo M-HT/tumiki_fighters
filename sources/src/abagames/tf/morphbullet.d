@@ -14,18 +14,18 @@ private import abagames.util.bulletml.bullet;
 public class MorphBullet: Bullet {
  public:
   static const int MORPH_MAX = 8;
-  BulletMLParser *parser[MORPH_MAX];
+  BulletMLParser*[MORPH_MAX] parser;
   float[MORPH_MAX] ranks;
   float[MORPH_MAX] speeds;
   int morphNum;
   int morphIdx;
  private:
-  
+
   public this(int id) {
     super(id);
   }
 
-  public void setMorph(BulletMLParser *p[], float[] r, float[] s, int mn, int mi) {
+  public void setMorph(BulletMLParser*[] p, float[] r, float[] s, int mn, int mi) {
     morphNum = mn;
     morphIdx = mi;
     for (int i = 0; i < mn; i++) {

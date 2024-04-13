@@ -485,7 +485,7 @@ public class Tumiki {
  */
 public class Barrage {
  public:
-  BulletMLParser *parser[];
+  BulletMLParser*[] parser;
   float[] rank;
   float[] speed;
   int shape, color;

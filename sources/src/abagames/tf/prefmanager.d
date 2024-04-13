@@ -36,7 +36,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
   public void load() {
     scope File fd;
     try {
-      int read_data[1];
+      int[1] read_data;
       fd.open(PREF_FILE);
       fd.rawRead(read_data);
       if (read_data[0] != VERSION_NUM)
@@ -54,7 +54,7 @@ public class PrefManager: abagames.util.prefmanager.PrefManager {
     scope File fd;
     try {
       fd.open(PREF_FILE, "wb");
-      const int write_data[1] = [VERSION_NUM];
+      const int[1] write_data = [VERSION_NUM];
       fd.rawWrite(write_data);
       foreach (RankingItem ri; ranking)
         ri.save(fd);
@@ -91,12 +91,12 @@ public class RankingItem {
   }
 
   public void save(File fd) {
-    const int write_data[2] = [score, stage];
+    const int[2] write_data = [score, stage];
     fd.rawWrite(write_data);
   }
 
   public void load(File fd) {
-    int read_data[2];
+    int[2] read_data;
     fd.rawRead(read_data);
     score = read_data[0];
     stage = read_data[1];

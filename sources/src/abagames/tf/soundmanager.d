@@ -26,8 +26,8 @@ public class SoundManager {
   const int SE_NUM = 13;
  private static:
   GameManager manager;
-  Music bgm[BGM_NUM];
-  Chunk se[SE_NUM];
+  Music[BGM_NUM] bgm;
+  Chunk[SE_NUM] se;
   string[] bgmFileName =
     ["we_are_tumiki_fighters.ogg",
     "just_over_the_horizon.ogg",

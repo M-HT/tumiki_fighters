@@ -104,7 +104,7 @@ public class BulletActor: Actor {
 		  int shape, int color, float size,
 		  float xReverse, float yReverse,
 		  BulletTarget target, int type,
-		  BulletMLParser *parser[], float[] ranks, float[] speeds,
+		  BulletMLParser*[] parser, float[] ranks, float[] speeds,
 		  int morphNum, int morphIdx) {
     bullet.set(runner, x, y, deg, speed, rank);
     bullet.setMorph(parser, ranks, speeds, morphNum, morphIdx);

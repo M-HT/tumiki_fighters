@@ -83,7 +83,7 @@ public class BulletActorPool: ActorPool, BulletsManager {
 	   rb.parser, rb.ranks, rb.speeds, rb.morphNum, rb.morphIdx);
   }
 
-  public BulletActor addTopBullet(BulletMLParser *parser[],
+  public BulletActor addTopBullet(BulletMLParser*[] parser,
 				  float[] ranks, float[] speeds,
 				  float x, float y, float deg, float speed,
 				  int shape, int color, float size,

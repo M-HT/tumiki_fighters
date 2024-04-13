@@ -7,7 +7,7 @@ module abagames.tf.boot;
 
 private import std.string;
 private import std.conv;
-private import std.c.stdlib;
+private import core.stdc.stdlib;
 private import abagames.util.logger;
 private import abagames.util.sdl.mainloop;
 private import abagames.util.sdl.pad;
@@ -118,7 +118,7 @@ public int WinMain(HINSTANCE hInstance,
   _minit();
   try {
     _moduleCtor();
-    char exe[4096];
+    char[4096] exe;
     GetModuleFileNameA(null, exe, 4096);
     string[1] prog;
     prog[0] = to!string(exe);

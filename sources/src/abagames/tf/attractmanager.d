@@ -81,6 +81,7 @@ public class AttractManager {
 	  break;
 	case 9:
 	  x -= 19;
+	  goto default;
 	default:
 	  rs ~= "TH";
 	  break;

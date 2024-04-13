@@ -16,7 +16,7 @@ private import abagames.util.logger;
  */
 public class BarrageManager {
  private:
-  static BulletMLParserTinyXML *parser[string];
+  static BulletMLParserTinyXML*[string] parser;
   static string BARRAGE_DIR_NAME = "barrage";
 
   public static void loadBulletMLs() {
