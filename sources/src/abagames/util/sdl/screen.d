@@ -8,8 +8,10 @@ module abagames.util.sdl.screen;
 /**
  * SDL screen handler interface.
  */
-public interface Screen {
+//public interface Screen {
+public abstract class Screen {
   public void initSDL();
+  public void resized(int width, int height);
   public void closeSDL();
   public void flip();
   public void clear();

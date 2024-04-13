@@ -13,10 +13,10 @@ You can catch the enemy's broken pieces. Pieces are stuck to your ship and count
 While holding a slow key, the ship becomes slow and the ship direction is fixed. Stuck pieces are pulled in and you can prevent a crash of them, but the bonus score reduces to one fifth. Enemy's pieces are not stuck while holding this key.
 <hr/>
 
-The game was created by Kenta Cho (http://www.asahi-net.or.jp/~cs8k-cyu/windows/tf_e.html) and released with BSD 2-Clause License. (See readme.txt/readme_e.txt)
+The game was created by [Kenta Cho](https://www.asahi-net.or.jp/~cs8k-cyu/windows/tf_e.html "Kenta Cho - TUMIKI Fighters") and released with BSD 2-Clause License. (See readme.txt/readme_e.txt)
 
-It uses the libBulletML library by shinichiro.h (http://shinh.skr.jp/libbulletml/index_en.html).
+This fork is a port to D version 2, Linux, SDL2, Pandora, DragonBox Pyra.
 
-This fork is a port to D version 2, Pandora. It also contains an OpenGL ES branch.
+It uses the [libBulletML](https://shinh.skr.jp/libbulletml/index_en.html "libBulletML") library by shinichiro.h.
 
-The Pandora release is based on OpenGL ES branch, but it also works in master branch (OpenGL) using glshim (original or ptitSeb's fork) - https://github.com/lunixbochs/glshim or https://github.com/ptitSeb/glshim
+It uses [BindBC-SDL](https://github.com/BindBC/bindbc-sdl "BindBC-SDL") (D bindings to SDL), which is under [Boost Software License](https://www.boost.org/LICENSE_1_0.txt "Boost Software License").

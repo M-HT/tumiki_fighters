@@ -8,7 +8,7 @@ module abagames.tf.gamemanager;
 private import std.math;
 private import std.conv;
 private import opengl;
-private import SDL;
+private import bindbc.sdl;
 private import bulletml;
 version (PANDORA) {
     import std.conv;
@@ -322,7 +322,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
 
   // Move actors in game(called once per frame).
   public override void move() {
-    if (pad.keys[SDLK_ESCAPE] == SDL_PRESSED) {
+    if (pad.keys[SDL_SCANCODE_ESCAPE] == SDL_PRESSED) {
       mainLoop.breakLoop();
       return;
     }
@@ -404,7 +404,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
 	Music.fadeMusic();
       }
     }
-    if (pad.keys[SDLK_p] == SDL_PRESSED) {
+    if (pad.keys[SDL_SCANCODE_P] == SDL_PRESSED) {
       if (!pPrsd) {
 	pPrsd = true;
 	if (state == State.IN_GAME)
@@ -479,7 +479,7 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
 
   private void movePause() {
     pauseCnt++;
-    if (pad.keys[SDLK_p] == SDL_PRESSED) {
+    if (pad.keys[SDL_SCANCODE_P] == SDL_PRESSED) {
       if (!pPrsd) {
 	pPrsd = true;
 	resumePause();
@@ -497,14 +497,6 @@ public class GameManager: abagames.util.sdl.gamemanager.GameManager {
 
   // Draw actors in game(called once per frame).
   public override void draw() {
-    SDL_Event e = mainLoop.event;
-    if (e.type == SDL_VIDEORESIZE) {
-      SDL_ResizeEvent re = e.resize;
-      if (re.w > 150 && re.h > 100) {
-        screen.resized(re.w, re.h);
-        screen.clear();
-      }
-    }
     screen.viewOrthoFixed();
     glDisable(GL_CULL_FACE);
     field.drawBack();
